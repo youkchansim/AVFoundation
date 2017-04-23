@@ -238,7 +238,7 @@ class THSpeechController {
 
   * 1. 클래스의 필수 속성을 클래스 확장에 정의하고 헤더에 정의 된 synthesizer 속성을 다시 정의하여 읽기 / 쓰기가되도록합니다. 또한 대화에 사용될 음성 및 음성 문자열의 속성을 정의합니다.
   * 2. AVSpeechSynthesizer의 새 인스턴스를 만듭니다. 이것은 텍스트 음성 변환을 수행하는 객체입니다. AVSpeechUtterance의 하나 이상의 인스턴스에 대한 대기열로 작동하며 진행중인 음성의 진행 상태를 제어하고 모니터링 할 수있는 인터페이스를 제공합니다.
-  * 3. AVSpeechSynthesisVoice의 두 인스턴스가 포함 된 NSArray를 만듭니다. 음성 지원은 현재 매우 제한적입니다. Mac과 같이 이름이 지정된 음성을 지정할 수있는 기능이 없습니다. 대신 각 언어 / 로켈에는 하나의 미리 정의 된 음성이 있습니다. 이 경우 연사 # 1은 미국 영어 음성을 사용하고 연사 # 2는 영국 영어 음성을 사용합니다. AVSpeechSynthesisVoice에서 speechVoices 클래스 메서드를 호출하여 지원되는 전체 음성 목록을 가져올 수 있습니다.
+  * 3. AVSpeechSynthesisVoice의 두 인스턴스가 포함 된 NSArray를 만듭니다. 음성 지원은 현재 매우 제한적입니다. Mac과 같이 이름이 지정된 음성을 지정할 수있는 기능이 없습니다. 대신 각 언어 / 로켈에는 하나의 미리 정의 된 음성이 있습니다. 이 경우 연사 # 1은 한국 음성을 사용하고 연사 # 2는 영국 영어 음성을 사용합니다. AVSpeechSynthesisVoice에서 speechVoices 클래스 메서드를 호출하여 지원되는 전체 음성 목록을 가져올 수 있습니다.
   * 4. 인위적인 대화의 앞뒤를 정의하는 문자열의 배열을 만듭니다.
 
 ```Swift
@@ -262,7 +262,6 @@ extension THSpeechController {
   * 4. 발성을 위한 `pitchMultiplier`를 지정하십시오. 이렇게하면이 특정 발화를 말하는 음성의 피치가 변경됩니다. pitchMultiplier의 허용 값은 0.5 (낮은 피치)에서 2.0 (높은 피치) 사이입니다.
   * 5. `postUtteranceDelay`를 0.1f로 지정하십시오. 이것은 음성 합성기가 다음 발화를 말하기 전에 약간 일시 정지하게한다. 마찬가지로 `preUtteranceDelay`를 설정할 수 있습니다.
 
-* 응용 프로그램을 실행하고 대화를 청취하십시오. Hello World가 AV Foundation 스타일로 완성되었습니다!
 * 다양한 `AVSpeechUtterance` 설정을 시험하여 어떻게 작동하는지 이해하십시오. 다른 가능한 목소리들을 오디션하십시오. 전쟁과 평화의 전체 텍스트로 AVSpeechUtterance의 인스턴스를 만들고 앉아서 긴장을 풀어보십시오.
 
 ```

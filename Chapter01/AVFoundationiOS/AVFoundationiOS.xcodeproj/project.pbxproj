@@ -8,20 +8,22 @@
 
 /* Begin PBXBuildFile section */
 		E95024181EACF8F000569AD8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95024171EACF8F000569AD8 /* AppDelegate.swift */; };
-		E950241A1EACF8F000569AD8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95024191EACF8F000569AD8 /* ViewController.swift */; };
+		E950241A1EACF8F000569AD8 /* ViewController_1.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95024191EACF8F000569AD8 /* ViewController_1.swift */; };
 		E950241D1EACF8F000569AD8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E950241B1EACF8F000569AD8 /* Main.storyboard */; };
 		E950241F1EACF8F000569AD8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E950241E1EACF8F000569AD8 /* Assets.xcassets */; };
 		E95024221EACF8F000569AD8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E95024201EACF8F000569AD8 /* LaunchScreen.storyboard */; };
+		E950242A1EACFABC00569AD8 /* THSpeechController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95024291EACFABC00569AD8 /* THSpeechController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		E95024141EACF8F000569AD8 /* AVFoundationiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVFoundationiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E95024171EACF8F000569AD8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		E95024191EACF8F000569AD8 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		E95024191EACF8F000569AD8 /* ViewController_1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController_1.swift; sourceTree = "<group>"; };
 		E950241C1EACF8F000569AD8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		E950241E1EACF8F000569AD8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E95024211EACF8F000569AD8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E95024231EACF8F000569AD8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E95024291EACFABC00569AD8 /* THSpeechController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = THSpeechController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,11 +57,12 @@
 			isa = PBXGroup;
 			children = (
 				E95024171EACF8F000569AD8 /* AppDelegate.swift */,
-				E95024191EACF8F000569AD8 /* ViewController.swift */,
+				E95024191EACF8F000569AD8 /* ViewController_1.swift */,
 				E950241B1EACF8F000569AD8 /* Main.storyboard */,
 				E950241E1EACF8F000569AD8 /* Assets.xcassets */,
 				E95024201EACF8F000569AD8 /* LaunchScreen.storyboard */,
 				E95024231EACF8F000569AD8 /* Info.plist */,
+				E95024291EACFABC00569AD8 /* THSpeechController.swift */,
 			);
 			path = AVFoundationiOS;
 			sourceTree = "<group>";
@@ -137,7 +140,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E950241A1EACF8F000569AD8 /* ViewController.swift in Sources */,
+				E950241A1EACF8F000569AD8 /* ViewController_1.swift in Sources */,
+				E950242A1EACFABC00569AD8 /* THSpeechController.swift in Sources */,
 				E95024181EACF8F000569AD8 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

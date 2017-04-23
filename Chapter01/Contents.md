@@ -142,8 +142,138 @@ Note
   * Spatially : 이는 개별 비디오 프레임을 압축하며 이를 인트라 프레임 압축이라고합니다.
   * Temporally : 비디오 프레임 그룹 전체의 중복을 압축합니다. 이것을 프레임 간 압축이라고합니다.
 
-* 프레임 간 압축을 사용하면 프레임이 GOP (Group of Pictures)로 그룹화됩니다. 이 GOP 내에서 시간상 중복성이 제거 될 수 있습니다. 비디오의 전형적인 장면을 생각하면 거리를 걷는 자동차 운전자 나 거리를 걷는 사람과 같이 움직이는 요소가 있지만 배경 환경은 종종 고정되어 있습니다. 고정 된 배경은 압축을 통해 제거 될 수있는 시간 중복성을 나타냅니다.
+* 프레임 간 압축을 사용하면 프레임이 GOP(Group of Pictures)로 그룹화됩니다. 이 GOP 내에서 시간상 중복성이 제거 될 수 있습니다. 비디오의 전형적인 장면을 생각하면 거리를 걷는 자동차 운전자 나 거리를 걷는 사람과 같이 움직이는 요소가 있지만 배경 환경은 종종 고정되어 있습니다. 고정 된 배경은 압축을 통해 제거 될 수있는 시간 중복성을 나타냅니다.
 * 그림 1.9와 같이 GOP 내에 저장되는 세 가지 유형의 프레임이 있습니다.
 
 ![](Resource/1_10.png)
 
+  * I-frames: 독립 실행 형 또는 키 프레임이며 전체 이미지를 만드는 데 필요한 모든 데이터가 들어 있습니다. 모든 GOP에는 정확히 하나의 I 프레임이 있습니다. 독립 실행 형 프레임이므로 크기가 가장 크지만 압축을 해제하는 데 가장 빠릅니다.
+  * P-frames: P- 프레임 또는 예측 된 프레임은 가장 가까운 I- 프레임 또는 P- 프레임을 기반으로 "예측 된"그림에서 인코딩됩니다. P 프레임은 가장 가까운 선행 P 프레임 또는 그룹의 I 프레임의 데이터를 참조 할 수 있습니다. 이웃 P 프레임과 B 프레임이 참조 프레임을 참조 할 수 있으므로이를 참조 프레임이라고 부르는 것을 자주 보게됩니다.
+  * B-frames: B- 프레임 또는 양방향 프레임은 그 앞뒤에 오는 프레임 정보를 기반으로 인코딩됩니다. 공간이 거의 필요하지 않지만 주변 프레임에 의존하기 때문에 압축을 해제하는 데 시간이 오래 걸립니다.
+
+* H.264는 인코딩 프로세스 중에 사용 된 알고리즘을 결정하는 인코딩 프로파일을 추가로 지원합니다. 다음 세 가지 최상위 프로필이 정의됩니다.
+  * Baseline: 이 프로파일은 일반적으로 모바일 장치 용 미디어를 인코딩 할 때 사용됩니다. 가장 효율적인 압축을 제공하므로 파일 크기가 커지지만 B 프레임을 지원하지 않기 때문에 계산량이 가장 적습니다. iPhone 3GS와 같이 구형 iOS 기기를 타겟팅하는 경우 기준 프로파일을 사용해야합니다.
+  * Main: 이 프로필은 사용 가능한 알고리즘의 수가 더 많기 때문에 기준보다 계산 집약적이지만 압축률은 높아집니다.
+  * High: 이 프로필을 사용하면 가장 높은 품질의 압축이 사용되지만 인코딩 기술과 알고리즘의 모든 부분이 사용되기 때문에 3 가지 중에서 가장 집중적입니다.
+
+### Apple ProRes
+* AV Foundation은 Apple ProRes 코덱의 두 가지 flavors을 지원합니다. Apple ProRes는 전문 편집 및 제작 워크 플로우를 위해 제작 되었기 때문에 intermediate 또는 mezzanine 코덱으로 간주됩니다. Apple ProRes 코덱은 프레임 독립적이며 I 프레임만 사용되므로 편집하기에 더 적합합니다. 그들은 또한 장면의 복잡성을 기반으로 각 프레임을 인코딩하는 데 사용되는 비트 수를 변경하는 가변 비트 전송률 인코딩을 사용합니다.
+* ProRes는 손실이 많은 코덱이지만 `최고 품질`입니다. Apple ProRes 422는 4 : 2 : 2 크로마 하위 샘플링과 10 비트 샘플 깊이를 사용합니다. Apple ProRes 4444는 4 : 4 : 4 크로마 하위 샘플링을 사용하며 마지막 4는 무손실 알파 채널과 최대 12 비트 샘플 깊이를 지원함을 나타냅니다.
+* ProRes 코덱은 `OS X`에서만 사용할 수 있습니다. iOS 전용으로 개발하는 경우 H.264가 유일한 게임입니다. 그러나 Apple은 iFrame이라는 편집 목적으로 캡처 할 때 사용할 수있는 일반적인 H.264 인코딩에 한 가지 변형을 제공합니다. 이것은 편집 환경에보다 적합한 H.264 비디오를 생성하는 I- 프레임 전용 변형입니다. 이 형식은 AV Foundation에서 지원되며 Canon, Panasonic 및 Nikon과 같은 다양한 카메라 제조업체에서 추가로 지원합니다.
+
+```
+Note
+AV Foundation은 H.264 및 Apple ProRes 외에도 MPEG-1, MPEG-2, MPEG-4, H.263 및 DV와 같은 다양한 비디오 카메라 장치 코덱을 지원하므로 다양한 종류의 콘텐츠를 가져올 수 있습니다.
+```
+
+### Audio Codecs
+* AV Foundation은 Core Audio 프레임 워크가 지원하는 모든 오디오 코덱을 지원합니다. 즉 다양한 포맷에 대한 광범위한 지원을 의미합니다. 그러나 선형 PCM 오디오를 사용하지 않는 경우 가장 자주 사용하는 오디오는 AAC입니다.
+
+### AAC
+* AAC(Advanced Audio Coding)는 H.264와 유사한 오디오 스트리밍 및 다운로드에 사용되는 주요 형식입니다. MP3를 크게 개선하여 낮은 비트 전송률에서 높은 음질을 제공하므로 웹 배포에 이상적입니다. 또한 AAC는 오랫동안 MP3를 괴롭히는 라이센스 및 특허 제한을 가지고 있지 않습니다.
+
+```
+Note
+AV Foundation 및 Core Audio는 MP3 데이터의 디코딩을 지원하지만 인코딩하는 기능은 제공하지 않습니다.
+```
+
+### Container Formats
+* 대부분의 사람들과 같은 사람이라면 컴퓨터에서 다양한 미디어 파일을 찾을 수 있습니다. .mov, .m4v, .mpg 및 .m4a와 같은 확장자를 가진 파일을 찾을 수 있습니다. 일반적으로 이러한 유형을 파일 형식으로 지칭하지만 올바른 정의는 컨테이너 형식입니다.
+* 컨테이너 형식은 메타 파일 형식으로 간주됩니다. 상위 레벨에서 컨테이너 형식 내용을 설명하는 메타 데이터와 함께 하나 이상의 유형의 매체를 포함하는 디렉토리로 생각할 수 있습니다. 예를 들어, QuickTime 파일에는 비디오, 오디오, 자막 및 장 정보와 같은 다양한 미디어 유형이 포함될 수 있으며 보유한 각 미디어의 세부 정보를 설명하는 메타 데이터가 포함되어 있습니다.
+* 각 형식에는 파일의 구조를 결정하는 사양이 있습니다. 이 구조는 미디어의 지속 시간, 인코딩 및 타이밍 정보와 같이 포함 된 미디어의 기술적 측면을 정의 할뿐만 아니라 일반적으로 영화 제목이나 노래 아티스트 정보와 같은 설명 메타 데이터도 정의합니다. 이 메타 데이터는 iTunes 나 iOS Music 앱과 같은 도구에서 볼 수 있으며, AV Foundation은 애플리케이션에서 이러한 유형의 데이터를 읽고 쓸 수있는 클래스도 제공합니다.
+* AV Foundation 작업시 두 가지 기본 컨테이너 형식을 사용합니다.
+  * QuickTime : QuickTime은 더 큰 QuickTime 아키텍처의 일부로 정의 된 Apple의 독점 형식입니다. 이것은 전문적이고 소비자 설정에서 널리 사용되는 매우 견고하고 고도로 지정된 형식입니다. Apple은 Apple Developer Connection 사이트에서 찾을 수있는 QuickTime File Format Specification 문서에서이 형식을 아주 자세하게 설명합니다. 모든 AV Foundation 개발자는 미디어 응용 프로그램을 개발할 때 유익한 통찰력을 제공하기 때문에이 문서의 소개 부분을 최소한 읽어야합니다.
+  * MPEG-4 : MPEG-4 Part 14 사양은 MPEG-4 (MP4) 컨테이너 형식을 정의합니다. 이는 QuickTime 사양에서 직접 파생 된 업계 표준 형식이므로 이 둘은 구조와 기능면에서 매우 유사합니다. MP4 컨테이너에 대해 정의 된 공식 파일 확장자는 .mp4이지만 다양한 변형 확장이 사용됩니다 (특히 Apple의 생태계 내에서). 이러한 변형 파일 확장자는 여전히 동일한 기본 MP4 컨테이너 형식을 사용하지만 m4a 오디오 파일의 경우와 같이 특정 미디어 유형을 구분하는 데 자주 사용됩니다. 또는 m4v 비디오 파일의 경우처럼 기본 MP4 컨테이너에 대한 확장 사용을 추가로 나타낼 수 있습니다.
+
+### Hello AV Foundation
+* 이제 AV Foundation에 대한 높은 수준의 이해와 디지털 미디어에 대한 자세한 내용을 살펴 보았으므로 이 장을 약간 재미있게 마무리 해 보겠습니다.
+* Mac OS X에는 `NSSpeechSynthesizer` 클래스가 오래 있었으며 Cocoa 응용 프로그램에서 텍스트 음성 변환 기능을 쉽게 추가 할 수 있습니다. AV Foundation의 AVSpeechSynthesizer 클래스를 사용하여 iOS 앱에 유사한 기능을 추가 할 수 있습니다. 이 클래스는 AVSpeechUtterance라는 클래스의 인스턴스 인 하나 이상의 발화를 말하기 위해 사용됩니다. "Hello World!"라는 구를 말하고 싶다면 다음과 같이 할 수 있습니다.
+
+```Swift
+import UIKit
+import AVFoundation
+
+class ViewController: UIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        let synthesizer = AVSpeechSynthesizer()
+        let utterance = AVSpeechUtterance(string: "Hello World!")
+        synthesizer.speak(utterance)
+    }
+}
+```
+
+* 이 코드를 실행하면 로켈의 기본 음성으로 "Hello World!"라는 구가 들립니다. AV Foundation과 대화를 이어갈 간단한 응용 프로그램을 작성하여이 기능을 실행 해 봅시다.
+* 이 책에서 빌드 할 모든 프로젝트에는 책의 샘플 코드 저장소에 "초보자"및 "최종"버전이 있습니다. 최종 버전은 완료된 프로젝트이며 빌드하고 실행할 준비가되었습니다. 스타터 버전에는 사용자 인터페이스와 지원 클래스가 있으며 개발중인 클래스의 스텁 버전이 포함되어 있습니다. 또한 대부분의 샘플 프로젝트에는 AV Foundation 코드를 나머지 응용 프로그램과 분리하는 코드가 포함되어 있습니다. 이렇게하면 사용자 인터페이스 세부 사항에 얽매이지 않고 AV Foundation에 집중할 수 있습니다. 또한 기본 경험이 OS X 또는 iOS에 상관없이 샘플 앱에 액세스 할 수있게 해줍니다.
+* 이 책의 샘플 코드 저장소에서 1 장 디렉토리 HelloAVF_Starter에서 시작 프로젝트를 찾을 수 있다. 그림 1.10은이 앱이 실제로 작동하고 있음을 보여줍니다.
+
+![](Resource/1_11.png)
+
+* 프로젝트에는 THSpeechController라는 클래스가 있습니다. 이 클래스는 응용 프로그램의 텍스트 음성 변환 기능을 개발할 클래스입니다.
+
+```Swift
+import Foundation
+import AVFoundation
+
+class THSpeechController {
+    let synthesizer = AVSpeechSynthesizer()
+    let voices = [
+        AVSpeechSynthesisVoice(language: "ko-KR"),
+        AVSpeechSynthesisVoice(language: "en-GB"),
+    ]
+    let speechStrings = [
+        "안녕? 나는 육찬심이라고해",
+        "Hi? My name is jobs. I'm ~",
+        "우와 이거 되게 신기하다. 한글도 잘 되네",
+        "Very! I have always felt so misun-derstood",
+        "AV Foundation 정말 어렵지 않니?",
+        "Oh, they're all my babies. couldn't possibly choose.",
+        "정말 멋진 기능이다 이거!",
+        "The pleasure was all mine! Have fun!"
+    ]
+}
+```
+
+  * 1. 클래스의 필수 속성을 클래스 확장에 정의하고 헤더에 정의 된 synthesizer 속성을 다시 정의하여 읽기 / 쓰기가되도록합니다. 또한 대화에 사용될 음성 및 음성 문자열의 속성을 정의합니다.
+  * 2. AVSpeechSynthesizer의 새 인스턴스를 만듭니다. 이것은 텍스트 음성 변환을 수행하는 객체입니다. AVSpeechUtterance의 하나 이상의 인스턴스에 대한 대기열로 작동하며 진행중인 음성의 진행 상태를 제어하고 모니터링 할 수있는 인터페이스를 제공합니다.
+  * 3. AVSpeechSynthesisVoice의 두 인스턴스가 포함 된 NSArray를 만듭니다. 음성 지원은 현재 매우 제한적입니다. Mac과 같이 이름이 지정된 음성을 지정할 수있는 기능이 없습니다. 대신 각 언어 / 로켈에는 하나의 미리 정의 된 음성이 있습니다. 이 경우 연사 # 1은 미국 영어 음성을 사용하고 연사 # 2는 영국 영어 음성을 사용합니다. AVSpeechSynthesisVoice에서 speechVoices 클래스 메서드를 호출하여 지원되는 전체 음성 목록을 가져올 수 있습니다.
+  * 4. 인위적인 대화의 앞뒤를 정의하는 문자열의 배열을 만듭니다.
+
+```Swift
+extension THSpeechController {
+    func beginConversation() {
+        for (index, string) in speechStrings.enumerated() {
+            let utterance = AVSpeechUtterance(string: string)
+            utterance.voice = voices[index % 2]
+            utterance.rate = 0.4
+            utterance.pitchMultiplier = 0.8
+            utterance.postUtteranceDelay = 0.1
+            synthesizer.speak(utterance)
+        }
+    }
+}
+```
+
+  * 1. 음성 문자열 컬렉션을 반복하고 각각에 대해 AVSpeechUtterance의 새 인스턴스를 만들고 해당 문자열을 initWithString : 이니셜 라이저에 전달합니다.
+  * 2. 이전에 정의한 두 목소리 사이를왔다 갔다합니다. 반복해도 미국 목소리로 말하고 이상한 반복은 영국 목소리로 말할 것입니다.
+  * 3. 이 발언을 말할 속도를 지정하십시오. 이 값을 기본값보다 약간 느리게 설정하려면이 값을 0.4로 설정합니다. 허용 된 속도가 `AVSpeechUtteranceMinimumSpeechRate`와 `AVSpeechUtteranceMaximumSpeechRate` 사이에 있음을 문서에 명시해야한다. 현재 값은 각각 0.0과 1.0입니다. 그러나 이것들은 상수이기 때문에 향후 iOS 버전에서 값이 변경 될 수 있습니다. rate 속성을 수정하는 경우 속도를 최소 및 최대 범위의 백분율로 계산하는 것이 더 안전 할 수 있습니다.
+  * 4. 발성을 위한 `pitchMultiplier`를 지정하십시오. 이렇게하면이 특정 발화를 말하는 음성의 피치가 변경됩니다. pitchMultiplier의 허용 값은 0.5 (낮은 피치)에서 2.0 (높은 피치) 사이입니다.
+  * 5. `postUtteranceDelay`를 0.1f로 지정하십시오. 이것은 음성 합성기가 다음 발화를 말하기 전에 약간 일시 정지하게한다. 마찬가지로 `preUtteranceDelay`를 설정할 수 있습니다.
+
+* 응용 프로그램을 실행하고 대화를 청취하십시오. Hello World가 AV Foundation 스타일로 완성되었습니다!
+* 다양한 `AVSpeechUtterance` 설정을 시험하여 어떻게 작동하는지 이해하십시오. 다른 가능한 목소리들을 오디션하십시오. 전쟁과 평화의 전체 텍스트로 AVSpeechUtterance의 인스턴스를 만들고 앉아서 긴장을 풀어보십시오.
+
+```
+Note
+이 책이 완성됨에 따라 iOS 8 및 Xcode 6의 최종 버전이 출시되었습니다. Xcode 6 및 iOS 8에서 샘플 프로젝트를 실행하는 방법에 대한 추가 정보는 소스 코드 저장소의 Xcode 6 및 iOS 8 Notes.pdf 파일을 참조하십시오.
+```
+
+## Summary
+* 이 장에서는 AV Foundation 프레임 워크에 대해 소개했습니다. 이제는 Apple의 미디어 환경과 그것이 제공하는 기능에 적합한 지에 대해 더 잘 이해해야합니다. 또한 이제는 디지털 미디어 도메인 자체에 대해 더 잘 이해하게되었습니다. AV Foundation을 사용하면 미디어의 세부 사항에 너무 깊이 관여하지 않고도 강력한 응용 프로그램을 만들 수 있지만 도메인에 대해 더 많이 이해할수록 원하는 응용 프로그램을보다 쉽게 만들 수 있습니다. AV Foundation은 Mac OS X 및 iOS에서의 미디어의 미래이며, 이 책은 프레임 워크를 사용하여 차세대 미디어 응용 프로그램을 성공적으로 구축하는 방법을 보여주는 실용적인 가이드를 제공합니다.
+
+## Challenge
+* Xcode의 설명서 브라우저 또는 Apple Developer Connection 사이트에서 AV Foundation의 API 설명서를 엽니 다. 문서를 탐색하고 클래스가 논리적으로 어떻게 관련되어 있는지, 프레임 워크 전체에서 사용되는 명명 규칙에 대해 이해해야합니다. 그렇게하면 프레임 워크에서 제공하는 다양한 기능에 대한 이해를 갖게되며 전체적으로 사용 된 패턴 및 규칙을 더 잘 이해하게됩니다.
+
+[AVFoundation](https://developer.apple.com/av-foundation/)

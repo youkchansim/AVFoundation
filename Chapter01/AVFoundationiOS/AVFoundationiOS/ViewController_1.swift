@@ -14,8 +14,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let synthesizer = AVSpeechSynthesizer()
-        let utterance = AVSpeechUtterance(string: "Hello World!")
-        synthesizer.speak(utterance)
+        let speechController = THSpeechController()
+        speechController.beginConversation()
     }
 }

@@ -13,6 +13,8 @@
 		E950241F1EACF8F000569AD8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E950241E1EACF8F000569AD8 /* Assets.xcassets */; };
 		E95024221EACF8F000569AD8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E95024201EACF8F000569AD8 /* LaunchScreen.storyboard */; };
 		E950242A1EACFABC00569AD8 /* THSpeechController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95024291EACFABC00569AD8 /* THSpeechController.swift */; };
+		E99D81181EC01CB600D08185 /* THPlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99D81171EC01CB600D08185 /* THPlayerController.swift */; };
+		E99D811A1EC032AB00D08185 /* THRecorderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99D81191EC032AB00D08185 /* THRecorderController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +26,8 @@
 		E95024211EACF8F000569AD8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E95024231EACF8F000569AD8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E95024291EACFABC00569AD8 /* THSpeechController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = THSpeechController.swift; sourceTree = "<group>"; };
+		E99D81171EC01CB600D08185 /* THPlayerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = THPlayerController.swift; sourceTree = "<group>"; };
+		E99D81191EC032AB00D08185 /* THRecorderController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = THRecorderController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,15 +60,41 @@
 		E95024161EACF8F000569AD8 /* AVFoundationiOS */ = {
 			isa = PBXGroup;
 			children = (
+				E99D81121EC012DE00D08185 /* Chapter1 */,
+				E99D81131EC012E600D08185 /* Chapter2 */,
+				E99D81141EC012F600D08185 /* Etc */,
 				E95024171EACF8F000569AD8 /* AppDelegate.swift */,
+			);
+			path = AVFoundationiOS;
+			sourceTree = "<group>";
+		};
+		E99D81121EC012DE00D08185 /* Chapter1 */ = {
+			isa = PBXGroup;
+			children = (
 				E95024191EACF8F000569AD8 /* ViewController_1.swift */,
+				E95024291EACFABC00569AD8 /* THSpeechController.swift */,
+			);
+			name = Chapter1;
+			sourceTree = "<group>";
+		};
+		E99D81131EC012E600D08185 /* Chapter2 */ = {
+			isa = PBXGroup;
+			children = (
+				E99D81171EC01CB600D08185 /* THPlayerController.swift */,
+				E99D81191EC032AB00D08185 /* THRecorderController.swift */,
+			);
+			name = Chapter2;
+			sourceTree = "<group>";
+		};
+		E99D81141EC012F600D08185 /* Etc */ = {
+			isa = PBXGroup;
+			children = (
 				E950241B1EACF8F000569AD8 /* Main.storyboard */,
 				E950241E1EACF8F000569AD8 /* Assets.xcassets */,
 				E95024201EACF8F000569AD8 /* LaunchScreen.storyboard */,
 				E95024231EACF8F000569AD8 /* Info.plist */,
-				E95024291EACFABC00569AD8 /* THSpeechController.swift */,
 			);
-			path = AVFoundationiOS;
+			name = Etc;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -141,7 +171,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				E950241A1EACF8F000569AD8 /* ViewController_1.swift in Sources */,
+				E99D81181EC01CB600D08185 /* THPlayerController.swift in Sources */,
 				E950242A1EACFABC00569AD8 /* THSpeechController.swift in Sources */,
+				E99D811A1EC032AB00D08185 /* THRecorderController.swift in Sources */,
 				E95024181EACF8F000569AD8 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -308,6 +340,7 @@
 				E95024281EACF8F000569AD8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

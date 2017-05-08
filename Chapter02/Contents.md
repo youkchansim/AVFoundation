@@ -592,4 +592,215 @@ class THRecorderController: NSObject {
 
 * 사용자가 기록을 중지하고 메모의 이름을 묻는 메시지가 표시되면보기 컨트롤러는 saveRecordingWithName : completionHandler : 메서드를 호출합니다. 이 방법은 tmp 디렉토리의 기록을 고유 한 파일 이름으로 Documents 디렉토리로 복사합니다. 복사 작업이 성공적이면 완료 블록을 호출하여 오디오 녹음의 이름과 URL이 포함 된 THMemo의 새 인스턴스를 전달합니다. 그런 다음보기 컨트롤러 코드는 THMemo 인스턴스를 사용하여 기록 된 메모 목록을 작성합니다.
 * 이 시점에서 응용 프로그램을 빌드하고 실행하여 핵심 동작을 실제로 볼 수 있습니다. 녹음을 녹음, 일시 중지 및 계속할 수 있으며 녹음을 중지하고 목록에 저장할 수 있습니다. 누락 된 기능의 마지막 몇 가지를 살펴 보겠습니다.
-메모 목록을 성공적으로 기록하고 작성할 수 있지만 현재는 메모를 재생할 수 없습니다. playbackMemo : 메소드를 정의했지만 아직이 기능을 구현하지 않았으므로 이제 그렇게하십시오. 우리는 옛 친구 인 AVAudioPlayer를 사용하여 재생 기능을 구현할 것이다 (목록 2.22 참조).
+메모 목록을 성공적으로 기록하고 작성할 수 있지만 현재는 메모를 재생할 수 없습니다. playbackMemo : 메소드를 정의했지만 아직이 기능을 구현하지 않았으므로 이제 그렇게하십시오. 우리는 옛 친구 인 AVAudioPlayer를 사용하여 재생 기능을 구현할 것이다.
+
+```Swift
+...
+
+class THRecorderController: NSObject {
+    ...
+
+    func playbackMemo(memo: THMemo) -> Bool {
+        player?.stop()
+        do {
+            player = try AVAudioPlayer(contentsOf: memo.url)
+            player?.play()
+            return true
+        } catch {
+            return false
+        }
+    }
+}
+
+...
+
+```
+
+* 먼저 기존 플레이어를 중지하여 시작합니다 (존재하는 경우). 그런 다음 THMemo에 저장된 URL로 새 AVAudioPlayer 인스턴스를 만들고 플레이어의 play 메서드를 호출합니다. 이 경우 초기화 오류는 무시하지만 프로덕션 코드는이 오류를보다 견고하게 처리해야합니다.
+* 재생 동작이 작동하면 필요한 누락 된 기능의 마지막 비트가 시간 표시와 관련됩니다. 사용자 인터페이스에는 시간을 표시하는 레이블이 있지만 00 : 00 : 00에 영구적으로 고정되어 있습니다. 특히 매력적이지는 않습니다. AVAudioRecorder에는 사용자에게 시간 피드백을 제공하는 사용자 인터페이스를 쉽게 만들 수있는 currentTime 속성이 있습니다. 이 속성은 NSTimeInterval을 반환합니다. NSTimeInterval은 녹음 시작 후 현재 시간 (초)을 나타냅니다. 자체 NSTimeInterval은 사용자 인터페이스에 표시하기에 적합하지 않지만 조금 마사지하면 더 적절한 것을 만들 수 있습니다. formattedCurrentTime 메서드를 살펴 보겠습니다.
+
+```Swift
+...
+
+class THRecorderController: NSObject {
+    ...
+
+    func formattedCurrentTime() -> String {
+        let time = Int(recorder?.currentTime ?? 0)
+        
+        let hours = time / 3600
+        let minutes = (time / 60) % 60
+        let seconds = time % 60
+        
+        let format = "%02i:%02i:%02i"
+        return String(format: format, hours, minutes, seconds)
+    }
+}
+
+...
+
+```
+
+* 레코더에서 현재 시간을 묻는 것으로 시작합니다. 반환 값은 NSTimeInterval로 정의 된 double 유형입니다. 이중 정밀도에 관심이 없으므로 시간을 NSUInteger로 저장합니다. 그런 다음 현재 시간에서 사용 가능한시, 분 및 초를 계산하고 NSString을 HH : mm : ss 형식으로 작성합니다.
+* 이것이 어떻게 사용되는지 궁금 할 수도 있습니다. 이 메서드는 프레젠테이션에 적합한 형식화 된 문자열을 반환하지만 단일 시점 일뿐입니다. 시간을 표시하는 디스플레이를 어떻게 업데이트합니까? 첫 번째 생각은 currentTime 속성에서 KVO (Key-Value Observing)를 사용하는 것입니다. AV Foundation에서 KVO를 자주 사용하더라도 AVAudioRecorder (및 AVAudioPlayer)로 작업 할 때는 currentTime 속성을 관찰 할 수 없기 때문에 작업하지 않습니다. 대신, NSTimer를 사용하여 일정한 간격으로 값을 폴링합니다. 아래는 매 30 초마다 폴링하는 새로운 NSTimer 인스턴스를 설정하는 애플리케이션의 MainViewController 클래스의 코드를 보여준다.
+
+```Swift
+class MainViewController: UIViewController {
+    @IBOutlet weak var timeLabel: UILabel!
+    
+    var timer: Timer?
+    let controller = THRecorderController()
+    
+    func startTimer() {
+        timer?.invalidate()
+        timer = Timer(timeInterval: 0.5, target: self, selector: #selector(updateDisplay), userInfo: nil, repeats: true)
+        if let timer = timer {
+            RunLoop.main.add(timer, forMode: .commonModes)
+        }
+    }
+    
+    func updateDisplay() {
+        timeLabel.text = controller.formattedCurrentTime()
+    }
+}
+```
+
+* 응용 프로그램을 실행하고 새 녹음을 시작하십시오. 이제 시간 표시가 업데이트되어 녹음의 현재 시간을 보여줍니다. 일시 중지를 누르면 현재 시간에 일시 중지되고 다음에 녹음을 살짝 누르면 중단 된 위치에서 바로 시작됩니다. 이렇게하면 녹음이 진행 중임을 알리고 사용자가 녹음 한 시간을 알리는 멋진 피드백을 사용자에게 제공합니다. 시간 표시는 녹음이 진행 중임을 나타내는 표시이지만 실제로 녹음 된 내용이 있으면 사용자에게 알려주지 않습니다. 캡처되는 오디오 신호에 대한 시각적인 피드백을 제공하는 것이 좋습니다. 다행히도 미터링을 사용하면 그렇게 할 수 있습니다.
+
+## Enabling Audio Metering
+* AVAudioRecorder 및 AVAudioPlayer에서 사용할 수있는 강력하고 유용한 기능은 오디오 미터링을 수행하는 기능입니다. 오디오 미터링을 사용하면 평균 및 최대 전력 수준을 데시벨 단위로 읽고 데이터를 사용하여 사용자에게 오디오 수준에 대한 추가 시각적 피드백을 제공 할 수 있습니다.
+* 두 클래스에서 사용할 수있는 메서드는 `averagePowerForChannel :` 및 `peak-PowerForChannel :` 입니다. 두 방법 모두 요청 된 전력 레벨을 나타내는 부동 소수점 값을 데시벨 (dB) 단위로 반환합니다. 값은 최대 전력을 나타내는 0dB 풀 스케일부터 최소 전력 레벨 또는 무음을 나타내는 -160dB까지 범위를 반환합니다.
+* 이 값을 읽기 전에 먼저 레코더의 `meteringEnabled` 속성을 YES로 설정하여 미터링을 활성화해야합니다. 이를 통해 레코더는 캡처 된 오디오 샘플에 대한 전력 계산을 수행 할 수 있습니다. 값을 읽을 때마다 `updateMeters` 메소드를 호출하여 최신 판독 값을 가져와야합니다.
+* 음성 메모 응용 프로그램에서 AVAudioRecorder 인스턴스에 대한 측광을 활성화하고 이 데이터를 사용하여 간단한 시각 측정기를 사용자에게 표시하려고합니다. `averagePowerForChannel :` 및 `peakPowerForChannel :` 메서드가 제공하는 판독 값은 데시벨 수준을 나타내는 부동 소수점 값을 반환하며 이는 전력 비율을 설명하는 대수 단위입니다. 샘플 애플리케이션에는 Quartz 기반의 레벨 미터보기가 있어 사용자가 녹화하는 동안 평균 및 최대 전력 수준을 표시하지만 이 뷰를 사용하기 전에 데시벨 값을 로그 눈금 -160에서 0으로 `0부터 1까지의 선형 스케일`로 변환합니다. 레벨 값을 요청할 때마다 이 변환을 수행 할 수 있습니다. 그러나 더 나은 해결책은 이러한 전환을 한 번 계산하고 필요에 따라 조회하는 것입니다. 샘플 애플리케이션에는 `THMeterTable`이라는 클래스가 있습니다. 이 클래스는 여러 가지 샘플 프로젝트에서 사용되는 Apple의 C ++ 기반 MeterTable 클래스의 단순화 된 Objective-C 포트입니다.
+
+```Swift
+class THMeterTable {
+    let MIN_DB: Float = -60.0
+    let TABLE_SIZE: Int = 300
+    
+    let meterTable: NSMutableArray
+    let scaleFactor: Float
+    
+    init() {
+        let dbResolution = MIN_DB / Float(TABLE_SIZE - 1)
+        
+        meterTable = NSMutableArray(capacity: TABLE_SIZE)
+        scaleFactor = 1.0 / dbResolution
+        
+        let minAmp = dbToAmp(dB: MIN_DB)
+        let ampRange = 1.0 - minAmp
+        let invAmpRange = 1.0 / ampRange
+        
+        for i in 0..<TABLE_SIZE {
+            let decibles = Float(i) * dbResolution
+            let amp = dbToAmp(dB: decibles)
+            let adjAmp = (amp - minAmp) * invAmpRange
+            
+            meterTable[i] = adjAmp
+        }
+    }
+    
+    func dbToAmp(dB: Float) -> Float {
+        return powf(1.0, 0.05 * dB)
+    }
+    
+    func valueForPower(power: Float) -> Float {
+        if power < MIN_DB {
+            return 0.0
+        } else if power >= 0.0 {
+            return 1.0
+        } else {
+            let index = Int(power * scaleFactor)
+            return meterTable[index] as! Float
+        }
+    }
+}
+```
+
+* 이 클래스는 사전 계산 된 데시벨 대 진폭 변환을 데시벨 수준의 분해능 (이 경우에는 -0.2dB)으로 저장하는 내부 배열을 만듭니다. 해상도 수준은 MIN_DB 및 TABLE_SIZE 값을 수정하여 조정할 수 있습니다.
+* 각 데시벨 값은 0 (-60dB)에서 1 범위에 맞게 조정 된 dbToAmp 함수를 호출하여 선형 눈금으로 변환 된 다음 값 범위에 걸쳐 곡선을 부드럽게하기 위해 계산되고 내부 조회 테이블에 저장되는 제곱근을 가집니다. 그런 다음 필요할 때마다 valueForPower : 메소드를 호출하여 이러한 값을 검색 할 수 있습니다.
+* THRecorderController 클래스로 돌아가서이 클래스를 사용하기 위해 다음과 같이 수정 해보자. 계량기 테이블을 보유 할 새 속성을 추가하고 init 메소드에서 새 계단식 인스턴스를 생성합니다.
+
+```Swift
+...
+
+class THRecorderController: NSObject {
+    ...
+
+    var meterTable: THMeterTable?
+    
+    ...
+
+    override init() {
+        super.init()
+        
+        ...
+
+        meterTable = THMeterTable()
+    }
+
+    ...
+}
+```
+
+* 이제 레벨 반환을 위한 새로운 메소드를 추가 할 것입니다.
+
+```Swift
+...
+
+class THRecorderController: NSObject {
+  ...
+
+  var levles: THLevelPair {
+          recorder?.updateMeters()
+          let avgPower = recorder?.averagePower(forChannel: 0) ?? 0
+          let peakPower = recorder?.peakPower(forChannel: 0) ?? 0
+          let linearLevel = meterTable?.valueForPower(power: avgPower) ?? 0
+          let linearPeak = meterTable?.valueForPower(power: peakPower) ?? 0
+        
+          return THLevelPair(levelsWithLevel: linearLevel, peakLevel: linearPeak)
+     }
+}
+```
+* 레코더의 updateMeters 메서드를 호출하여이 메서드를 시작합니다. 레벨 값을 읽는 즉시이 메소드를 호출하여 레벨이 최신인지 확인해야합니다. 그런 다음 채널 0의 평균 및 최고 출력 레벨을 묻습니다. 채널의 인덱스는 0이며 모노로 녹음하기 때문에 첫 번째 채널을 요청합니다. 선형 전력 레벨을 측정기 테이블에 쿼리하고 마지막으로 THLevelPair의 새 인스턴스를 만듭니다. 이 클래스는 이미 샘플 프로젝트에 있습니다. 평균 및 최고 레벨 쌍을 반환하는 것은 단순한 가치 보유자입니다.
+* 전원 수준을 읽는 것은 최신 값을 얻고 자 할 때마다 레코더를 폴링해야한다는 점에서 현재 시간을 요청하는 것과 유사합니다. 클라이언트 코드는 현재 시간을 요청할 때처럼 NSTimer를 사용할 수 있습니다. 그러나 애니메이션을 부드럽게 유지하기 위해 미터 디스플레이를 자주 업데이트해야하기 때문에 다른 해결책은 CADisplayLink를 사용하는 것입니다. CADisplayLink는 NSTimer와 유사하지만 자동으로 디스플레이의 재생 빈도와 동기화됩니다. MainViewController.swift을 열면 아래와 같은 메소드를 볼 수있다.
+
+```Swit
+class MainViewController: UIViewController {
+    @IBOutlet weak var levelMeterView: MeterView!
+    
+    var levelTimer: CADisplayLink?
+    let controller = THRecorderController()
+    
+    func startTimer() {
+        levelTimer?.invalidate()
+        
+        levelTimer = CADisplayLink(target: self, selector: #selector(updateDisplay))
+        levelTimer?.preferredFramesPerSecond = 5
+        levelTimer?.add(to: RunLoop.current, forMode: .commonModes)
+    }
+    
+    func stopMeterTimer() {
+        levelTimer?.invalidate()
+        levelTimer = nil
+        levelMeterView.resetLevelMeter()
+    }
+    
+    func updateDisplay() {
+        let levels = controller.levels
+        
+        levelMeterView.level = levels.level
+        levelMeterView.peakLevel = levels.peakLevel
+        
+        levelMeterView.setNeedsDisplay()
+    }
+}
+```
+
+* startLevelTimer 메서드가 호출되면 일정한 간격으로 updateLevelMeter 메서드를 호출하는 새로운 CADisplayLink 인스턴스를 만듭니다. 기본적으로 해당 간격은 새로 고침 빈도와 동기화되지만,이 경우 frameInterval 속성을 4로 설정하여 새로 고침 빈도를 1/4로 설정합니다. 이는 필요한 경우 충분합니다.
+* updateLevelMeter 메서드는 THRecorderController에서 해당 수준을 쿼리하고 해당 수준을 levelMeterView에 제공 한 다음 setNeedsDisplay를 호출하여 뷰가 자체적으로 다시 칠하도록합니다.
+* 응용 프로그램을 다시 빌드하고 실행하고 새 녹음을 시작하십시오. 레벨 미터는 목소리의 볼륨에 따라 디스플레이를 업데이트합니다. 이것은 메모가 실제로 기록되는 사용자에게 더 나은 시각적 피드백을 제공하기 때문에 응용 프로그램에 좋은 감동을 추가합니다.
+* 미터 디스플레이와 미터링에 대해주의해야 할 것은 비용이 들게된다는 것입니다. 미터링을 사용하면 몇 가지 추가 계산이 수행되어 전력 소비에 영향을 줄 수 있습니다. 또한이 응용 프로그램의 레벨 미터 Quartz를 사용하여 작성된 것입니다. Quartz는 훌륭한 프레임 워크이지만 CPU가 바운드되어 있으므로 계측기를 연속적으로 다시 그리는 데 많은 비용이 듭니다. 응용 프로그램의 의도는 일반적으로 "식료품 점에서 우유를 가져 가라"또는 "다음 금요일에 Charlie와의 모임을 준비하십시오"라고 말하는 것보다 짧은 메모를 기록하는 것이므로이 CPU 비용은 아마도 큰 문제가되지 않을 것입니다. 그러나 오랜 시간 동안 오디오를 녹음하려는 경우 미터링을 비활성화하거나 OpenGL ES 사용과 같은보다 효율적인 그리기 방법으로 전환하는 것이 좋습니다.
+
+## Summary
+* 이 장에서는 AV Foundation의 오디오 전용 클래스에서 제공하는 많은 기능을 보았습니다. AVAudioSession은 응용 프로그램과 더 큰 iOS 오디오 환경 사이의 중개자를 제공합니다. 범주를 사용하여 응용 프로그램에서 사용할 수있는 동작을 의미 론적으로 정의 할 수 있으며 중단 및 라우팅 변경을 관찰 할 수있는 기능도 제공합니다. AVAudioPlayer 및 AVAudioRecorder는 오디오 재생 및 녹음 처리를 위한 간단하면서도 강력한 인터페이스를 제공합니다. 둘 다 Core Audio 프레임 워크의 힘을 기반으로하지만 녹음 및 재생 기능을 앱에 추가하는 훨씬 쉽고 빠른 방법을 제공합니다.

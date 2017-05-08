@@ -15,6 +15,7 @@
 		E950242A1EACFABC00569AD8 /* THSpeechController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95024291EACFABC00569AD8 /* THSpeechController.swift */; };
 		E99D81181EC01CB600D08185 /* THPlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99D81171EC01CB600D08185 /* THPlayerController.swift */; };
 		E99D811A1EC032AB00D08185 /* THRecorderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99D81191EC032AB00D08185 /* THRecorderController.swift */; };
+		E99D811C1EC0432600D08185 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99D811B1EC0432600D08185 /* MainViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		E95024291EACFABC00569AD8 /* THSpeechController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = THSpeechController.swift; sourceTree = "<group>"; };
 		E99D81171EC01CB600D08185 /* THPlayerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = THPlayerController.swift; sourceTree = "<group>"; };
 		E99D81191EC032AB00D08185 /* THRecorderController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = THRecorderController.swift; sourceTree = "<group>"; };
+		E99D811B1EC0432600D08185 /* MainViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +84,7 @@
 			children = (
 				E99D81171EC01CB600D08185 /* THPlayerController.swift */,
 				E99D81191EC032AB00D08185 /* THRecorderController.swift */,
+				E99D811B1EC0432600D08185 /* MainViewController.swift */,
 			);
 			name = Chapter2;
 			sourceTree = "<group>";
@@ -173,6 +176,7 @@
 				E950241A1EACF8F000569AD8 /* ViewController_1.swift in Sources */,
 				E99D81181EC01CB600D08185 /* THPlayerController.swift in Sources */,
 				E950242A1EACFABC00569AD8 /* THSpeechController.swift in Sources */,
+				E99D811C1EC0432600D08185 /* MainViewController.swift in Sources */,
 				E99D811A1EC032AB00D08185 /* THRecorderController.swift in Sources */,
 				E95024181EACF8F000569AD8 /* AppDelegate.swift in Sources */,
 			);

@@ -25,26 +25,27 @@ class THRecorderController: NSObject {
     override init() {
         super.init()
         
+        meterTable = THMeterTable()
+        
         let tmpDir = NSTemporaryDirectory()
-        let filePath = tmpDir + "/memo.caf"
+        let filePath = (tmpDir as NSString).appendingPathComponent("memo.caf")
         let fileURL = URL(fileURLWithPath: filePath)
         let settings: [String: Any] = [
             AVFormatIDKey: kAudioFormatAppleIMA4,
             AVSampleRateKey: 44100.0,
             AVNumberOfChannelsKey: 1,
             AVEncoderBitDepthHintKey: 16,
-            AVEncoderAudioQualityKey: AVAudioQuality.medium
+            AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue
         ]
         
         recorder = try? AVAudioRecorder(url: fileURL, settings: settings)
         recorder?.delegate = self
+        recorder?.isMeteringEnabled = true
         recorder?.prepareToRecord()
-        
-        meterTable = THMeterTable()
     }
     
     var record: Bool {
-        return recorder?.isRecording ?? false
+        return recorder?.record() ?? false
     }
     
     func pause() {
@@ -98,6 +99,7 @@ class THRecorderController: NSObject {
     
     var levels: THLevelPair {
         recorder?.updateMeters()
+        
         let avgPower = recorder?.averagePower(forChannel: 0) ?? 0
         let peakPower = recorder?.peakPower(forChannel: 0) ?? 0
         let linearLevel = meterTable?.valueForPower(power: avgPower) ?? 0
@@ -110,6 +112,10 @@ class THRecorderController: NSObject {
 extension THRecorderController: AVAudioRecorderDelegate {
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         completionHandler?(flag)
+    }
+    
+    func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
+        print(error?.localizedDescription ?? "")
     }
 }
 
@@ -150,7 +156,7 @@ class THMeterTable {
     }
     
     func dbToAmp(dB: Float) -> Float {
-        return powf(1.0, 0.05 * dB)
+        return powf(10.0, 0.05 * dB)
     }
     
     func valueForPower(power: Float) -> Float {

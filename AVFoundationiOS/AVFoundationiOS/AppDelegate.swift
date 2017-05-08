@@ -29,8 +29,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         do {
             try session.setCategory(AVAudioSessionCategoryPlayAndRecord)
+        } catch let e {
+            print(e.localizedDescription)
+        }
+        
+        do {
             try session.setActive(true)
-        } catch (let e) {
+        } catch let e {
             print(e.localizedDescription)
         }
         

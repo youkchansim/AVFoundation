@@ -16,6 +16,10 @@
 		E99D81181EC01CB600D08185 /* THPlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99D81171EC01CB600D08185 /* THPlayerController.swift */; };
 		E99D811A1EC032AB00D08185 /* THRecorderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99D81191EC032AB00D08185 /* THRecorderController.swift */; };
 		E99D811C1EC0432600D08185 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99D811B1EC0432600D08185 /* MainViewController.swift */; };
+		E99D811E1EC0480F00D08185 /* MeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E99D811D1EC0480F00D08185 /* MeterView.swift */; };
+		E99D81221EC04BF200D08185 /* bass.caf in Resources */ = {isa = PBXBuildFile; fileRef = E99D811F1EC04BF200D08185 /* bass.caf */; };
+		E99D81231EC04BF200D08185 /* drums.caf in Resources */ = {isa = PBXBuildFile; fileRef = E99D81201EC04BF200D08185 /* drums.caf */; };
+		E99D81241EC04BF200D08185 /* guitar.caf in Resources */ = {isa = PBXBuildFile; fileRef = E99D81211EC04BF200D08185 /* guitar.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +34,10 @@
 		E99D81171EC01CB600D08185 /* THPlayerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = THPlayerController.swift; sourceTree = "<group>"; };
 		E99D81191EC032AB00D08185 /* THRecorderController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = THRecorderController.swift; sourceTree = "<group>"; };
 		E99D811B1EC0432600D08185 /* MainViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		E99D811D1EC0480F00D08185 /* MeterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MeterView.swift; sourceTree = "<group>"; };
+		E99D811F1EC04BF200D08185 /* bass.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = bass.caf; sourceTree = "<group>"; };
+		E99D81201EC04BF200D08185 /* drums.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = drums.caf; sourceTree = "<group>"; };
+		E99D81211EC04BF200D08185 /* guitar.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = guitar.caf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +54,9 @@
 		E950240B1EACF8F000569AD8 = {
 			isa = PBXGroup;
 			children = (
+				E99D811F1EC04BF200D08185 /* bass.caf */,
+				E99D81201EC04BF200D08185 /* drums.caf */,
+				E99D81211EC04BF200D08185 /* guitar.caf */,
 				E95024161EACF8F000569AD8 /* AVFoundationiOS */,
 				E95024151EACF8F000569AD8 /* Products */,
 			);
@@ -85,6 +96,7 @@
 				E99D81171EC01CB600D08185 /* THPlayerController.swift */,
 				E99D81191EC032AB00D08185 /* THRecorderController.swift */,
 				E99D811B1EC0432600D08185 /* MainViewController.swift */,
+				E99D811D1EC0480F00D08185 /* MeterView.swift */,
 			);
 			name = Chapter2;
 			sourceTree = "<group>";
@@ -160,7 +172,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E99D81241EC04BF200D08185 /* guitar.caf in Resources */,
+				E99D81231EC04BF200D08185 /* drums.caf in Resources */,
 				E95024221EACF8F000569AD8 /* LaunchScreen.storyboard in Resources */,
+				E99D81221EC04BF200D08185 /* bass.caf in Resources */,
 				E950241F1EACF8F000569AD8 /* Assets.xcassets in Resources */,
 				E950241D1EACF8F000569AD8 /* Main.storyboard in Resources */,
 			);
@@ -173,6 +188,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E99D811E1EC0480F00D08185 /* MeterView.swift in Sources */,
 				E950241A1EACF8F000569AD8 /* ViewController_1.swift in Sources */,
 				E99D81181EC01CB600D08185 /* THPlayerController.swift in Sources */,
 				E950242A1EACFABC00569AD8 /* THSpeechController.swift in Sources */,

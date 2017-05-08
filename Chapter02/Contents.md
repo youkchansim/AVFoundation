@@ -138,6 +138,7 @@ class THPlayerController {
                 player?.stop()
                 player?.currentTime = 0.0
             }
+            playing = false
         }
     }
     ...

@@ -11,8 +11,46 @@ import UIKit
 class MainViewController: UIViewController {
     @IBOutlet weak var levelMeterView: MeterView!
     
+    @IBAction func music(_ sender: Any) {
+        musicController.play()
+    }
+    
+    @IBAction func musicStop(_ sender: Any) {
+        musicController.stop()
+    }
+    
+    @IBAction func start(_ sender: Any) {
+        if controller.record {
+            print("start success")
+            startTimer()
+        } else {
+            print("start fail")
+        }
+    }
+    
+    @IBAction func stop(_ sender: Any) {
+        controller.stopWithCompletionHandler{
+            self.stopMeterTimer()
+            print($0)
+        }
+    }
+    
+    @IBAction func save(_ sender: Any) {
+        controller.saveRecordingWithName(name: "memo") {
+            self.stopMeterTimer()
+            if $0, let memo = $1 as? THMemo {
+                if controller.playbackMemo(memo: memo) {
+                    print("success")
+                } else {
+                    print("fail")
+                }
+            }
+        }
+    }
+    
     var levelTimer: CADisplayLink?
     let controller = THRecorderController()
+    let musicController = THPlayerController()
     
     func startTimer() {
         levelTimer?.invalidate()
@@ -34,16 +72,12 @@ class MainViewController: UIViewController {
         levelMeterView.level = levels.level
         levelMeterView.peakLevel = levels.peakLevel
         
+        print(levels.level, levels.peakLevel)
+        
         levelMeterView.setNeedsDisplay()
     }
-}
-
-class MeterView: UIView {
-    var level: Float = 0
-    var peakLevel: Float = 0
     
-    func resetLevelMeter() {
-        level = 0
-        peakLevel = 0
+    override func viewDidLoad() {
+        super.viewDidLoad()
     }
 }

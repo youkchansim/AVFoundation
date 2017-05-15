@@ -509,7 +509,7 @@ class THRecorderController: NSObject {
             AVSampleRateKey: 44100.0,
             AVNumberOfChannelsKey: 1,
             AVEncoderBitDepthHintKey: 16,
-            AVEncoderAudioQualityKey: AVAudioQuality.medium
+            AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue
         ]
         
         recorder = try? AVAudioRecorder(url: fileURL, settings: settings)

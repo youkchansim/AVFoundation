@@ -20,6 +20,7 @@
 		E99D81221EC04BF200D08185 /* bass.caf in Resources */ = {isa = PBXBuildFile; fileRef = E99D811F1EC04BF200D08185 /* bass.caf */; };
 		E99D81231EC04BF200D08185 /* drums.caf in Resources */ = {isa = PBXBuildFile; fileRef = E99D81201EC04BF200D08185 /* drums.caf */; };
 		E99D81241EC04BF200D08185 /* guitar.caf in Resources */ = {isa = PBXBuildFile; fileRef = E99D81211EC04BF200D08185 /* guitar.caf */; };
+		E9D129C81EC9E90D009117E9 /* chapter03_example.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D129C71EC9E90C009117E9 /* chapter03_example.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 		E99D811F1EC04BF200D08185 /* bass.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = bass.caf; sourceTree = "<group>"; };
 		E99D81201EC04BF200D08185 /* drums.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = drums.caf; sourceTree = "<group>"; };
 		E99D81211EC04BF200D08185 /* guitar.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = guitar.caf; sourceTree = "<group>"; };
+		E9D129C71EC9E90C009117E9 /* chapter03_example.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = chapter03_example.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +77,7 @@
 			children = (
 				E99D81121EC012DE00D08185 /* Chapter1 */,
 				E99D81131EC012E600D08185 /* Chapter2 */,
+				E9D129C61EC9E7F0009117E9 /* Chapter3 */,
 				E99D81141EC012F600D08185 /* Etc */,
 				E95024171EACF8F000569AD8 /* AppDelegate.swift */,
 			);
@@ -110,6 +113,14 @@
 				E95024231EACF8F000569AD8 /* Info.plist */,
 			);
 			name = Etc;
+			sourceTree = "<group>";
+		};
+		E9D129C61EC9E7F0009117E9 /* Chapter3 */ = {
+			isa = PBXGroup;
+			children = (
+				E9D129C71EC9E90C009117E9 /* chapter03_example.swift */,
+			);
+			name = Chapter3;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -195,6 +206,7 @@
 				E99D811C1EC0432600D08185 /* MainViewController.swift in Sources */,
 				E99D811A1EC032AB00D08185 /* THRecorderController.swift in Sources */,
 				E95024181EACF8F000569AD8 /* AppDelegate.swift in Sources */,
+				E9D129C81EC9E90D009117E9 /* chapter03_example.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -321,6 +333,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 4VZ23AUA4B;
 				INFOPLIST_FILE = AVFoundationiOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.YCS.AVFoundationiOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -334,6 +347,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 4VZ23AUA4B;
 				INFOPLIST_FILE = AVFoundationiOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.YCS.AVFoundationiOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";

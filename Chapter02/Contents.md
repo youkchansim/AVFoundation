@@ -766,7 +766,7 @@ class THRecorderController: NSObject {
 * 레코더의 updateMeters 메서드를 호출하여이 메서드를 시작합니다. 레벨 값을 읽는 즉시이 메소드를 호출하여 레벨이 최신인지 확인해야합니다. 그런 다음 채널 0의 평균 및 최고 출력 레벨을 묻습니다. 채널의 인덱스는 0이며 모노로 녹음하기 때문에 첫 번째 채널을 요청합니다. 선형 전력 레벨을 측정기 테이블에 쿼리하고 마지막으로 THLevelPair의 새 인스턴스를 만듭니다. 이 클래스는 이미 샘플 프로젝트에 있습니다. 평균 및 최고 레벨 쌍을 반환하는 것은 단순한 가치 보유자입니다.
 * 전원 수준을 읽는 것은 최신 값을 얻고 자 할 때마다 레코더를 폴링해야한다는 점에서 현재 시간을 요청하는 것과 유사합니다. 클라이언트 코드는 현재 시간을 요청할 때처럼 NSTimer를 사용할 수 있습니다. 그러나 애니메이션을 부드럽게 유지하기 위해 미터 디스플레이를 자주 업데이트해야하기 때문에 다른 해결책은 CADisplayLink를 사용하는 것입니다. CADisplayLink는 NSTimer와 유사하지만 자동으로 디스플레이의 재생 빈도와 동기화됩니다. MainViewController.swift을 열면 아래와 같은 메소드를 볼 수있다.
 
-```Swit
+```Swift
 class MainViewController: UIViewController {
     @IBOutlet weak var levelMeterView: MeterView!
     

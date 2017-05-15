@@ -702,7 +702,7 @@ class THMeterTable {
     }
     
     func dbToAmp(dB: Float) -> Float {
-        return powf(1.0, 0.05 * dB)
+        return powf(10.0, 0.05 * dB)
     }
     
     func valueForPower(power: Float) -> Float {

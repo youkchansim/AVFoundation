@@ -67,5 +67,75 @@ class Test {
                 }
             }
         }
+        
+        if let url = Bundle.main.url(forResource: "sunset", withExtension: "mov") {
+            let asset = AVAsset(url: url)
+            let keys = ["availableMetadataFormats"]
+            asset.loadValuesAsynchronously(forKeys: keys) {
+                let metadata = NSMutableArray()
+                //  Collect all metadata for the available for-mats
+                for format in asset.availableMetadataFormats {
+                    metadata.add(format)
+                }
+                //  Process AVMetadataItems
+            }
+        }
+        
+        let items: [AVMetadataItem] = []
+        let keySpace = AVMetadataKeySpaceiTunes
+        let artistKey = AVMetadataiTunesMetadataKeyArtist
+        let albumKey = AVMetadataiTunesMetadataKeyAlbum
+        let artistMetadata = AVMetadataItem.metadataItems(from: items, withKey: artistKey, keySpace: keySpace)
+        let albumMetadata = AVMetadataItem.metadataItems(from: items, withKey: albumKey, keySpace: keySpace)
+        
+        if !artistMetadata.isEmpty {
+            let artistItem = artistMetadata[0]
+        }
+        
+        if !albumMetadata.isEmpty {
+            let albumItem = albumMetadata[0]
+        }
+        
+        if let url = URL(string: "") {
+            let asset = AVAsset(url: url)
+            let metadata = asset.metadata(forFormat: AVMetadataFormatiTunesMetadata)
+            
+            for item in metadata {
+                NSLog("\(item.key, item.value)")
+            }
+        }
     }
 }
+
+//extension AVMetadataItem {
+//    var keyString: NSString {
+//        if let str = key as? NSString {
+//            return str
+//        } else if let number = key as? NSNumber {
+//            var keyValue = number.uint32Value
+//            var length = MemoryLayout<UInt32>.size
+//            
+//            if keyValue >> 24 == 0 {
+//                length -= 1
+//            }
+//            
+//            if keyValue >> 16 == 0 {
+//                length -= 1
+//            }
+//            
+//            if keyValue >> 8 == 0 {
+//                length -= 1
+//            }
+//            
+//            if keyValue >> 0 == 0 {
+//                length -= 1
+//            }
+//            
+//            var address = Int64(keyValue)
+//            address += (MemoryLayout<UInt32>.size - length)
+//            
+//            keyValue = CFSwapInt32BigToHost(keyValue)
+//            strncpy(<#T##__dst: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>, <#T##__src: UnsafePointer<Int8>!##UnsafePointer<Int8>!#>, <#T##__n: Int##Int#>)
+//        }
+//    }
+//}

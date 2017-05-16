@@ -193,3 +193,154 @@ if let url = Bundle.main.url(forResource: "sunset", withExtension: "mov") {
 노트
 AV Foundation은 모든 형태의 ID3v2 태그를 읽는 것을 지원하지만 ID3v2.2는 별표와 함께 제공됩니다. ID3v2.2의 레이아웃은 ID3v2.3 이상과 다릅니다. 특히 개별 태그는 4 개가 아닌 3 개의 문자입니다. 예를 들어, ID3v2.2로 태그 된 노래의 주석은 COM 프레임 아래에 저장되는 반면, ID3v2.3 이상으로 태그 된 동일한 노래는 해당 데이터를 COMM 프레임으로 저장합니다. 프레임 워크에서 정의한 문자열 상수는 ID3v2.3 이상에서 작업 할 때만 적용 할 수 있습니다. 그러나 ID3v2.2 데이터로 작업 할 수있는 방법을 샘플 애플리케이션에 전달할 수 있습니다.
 ```
+
+## Working with Metadata
+* AVAsset 및 AVAssetTrack은 관련 메타 데이터에 대해 쿼리 할 수 있는 기능을 제공합니다. 일반적으로 AVAsset에서 제공하는 메타 데이터를 활용하지만 트랙 레벨 메타 데이터를 검색하는 것이 유용 할 수 있습니다. 항목의 메타 데이터를 읽는 인터페이스는 `AVMetadataItem`이라는 클래스에서 제공합니다. 이 클래스는 QuickTime 및 MPEG-4 아톰 및 ID3 프레임에 저장된 메타 데이터에 액세스하는 객체 지향 인터페이스를 제공합니다.
+* AVAsset 및 AVAssetTrack은 연결된 메타 데이터를 검색하는 두 가지 방법을 제공합니다. 이러한 여러 가지 방법의 필요성을 이해하려면 먼저 핵심 공간의 개념을 이해해야합니다. AV Foundation은 AVMetadataItem 인스턴스의 컬렉션을 필터링 할 수 있도록 관련 키를 그룹화하는 방법으로 키 공간을 사용합니다. 그림 3.6과 같이 모든 자산에는 최소한 메타 데이터가 검색되는 두 개의 키 공간이 있습니다.
+
+<center>
+<image src="Resource/06.png" width="50%" height="50%">
+</center>
+
+* 공통 키 공간은 지원되는 모든 미디어 유형에 공통적인 키를 정의합니다. 여기에는 제목, 아티스트 및 아트 워크 정보와 같은 공통 항목이 포함됩니다. 이는 지원되는 모든 미디어 형식에 대해 일정 수준의 메타 데이터 정규화를 제공합니다. 공통 키 공간에서 메타 데이터를 검색하려면 저작물 또는 트랙에서 commonMetadata 속성을 요청합니다. 이 속성은 사용 가능한 모든 공통 메타 데이터의 배열을 반환합니다.
+* 형식 별 메타 데이터에 액세스하려면 애셋 또는 트랙에서 `metadataForFormat : 메소드`를 호출하면 됩니다. 이 메서드는 메타 데이터 형식을 정의하는 NSString을 사용하고 연결된 모든 메타 데이터가 포함 된 NSArray를 반환합니다. `AVMetadataFormat.h`는 지원하는 다양한 메타 데이터 형식에 대한 문자열 상수를 제공합니다. 특정 메타 데이터 형식 문자열을 하드 코딩하는 대신 리소스 또는 트랙에 `availableMetadataFormats`를 쿼리하여 리소스에 포함 된 모든 메타 데이터 형식을 정의하는 문자열 배열을 반환 할 수 있습니다. 이 결과 배열을 사용하여 모든 형식을 반복하고 각각에 대해 `metadataForFormat :`을 호출 할 수 있습니다. 예를 살펴 보겠습니다.
+
+```Swift
+if let url = Bundle.main.url(forResource: "sunset", withExtension: "mov") {
+    let asset = AVAsset(url: url)
+    let keys = ["availableMetadataFormats"]
+    asset.loadValuesAsynchronously(forKeys: keys) {
+        let metadata = NSMutableArray()
+        //  Collect all metadata for the available for-mats
+        for format in asset.availableMetadataFormats {
+            metadata.add(format)
+        }
+        //  Process AVMetadataItems
+    }
+}
+```
+
+## Finding Metadata
+* 메타 데이터 항목 배열을 가져온 후에는 일반적으로 특정 메타 데이터 값을 찾고자합니다. 특히 유용한 방법 중 하나는 AVMetadataItem에서 제공하는 다양한 편의 메소드를 사용하여 결과 세트를 검색하고 필터링하는 것입니다. 예를 들어 특정 M4A 오디오 파일의 아티스트 및 앨범 메타 데이터를 가져 오는 데 관심이있는 경우 다음과 같이이 데이터를 검색 할 수 있습니다.
+
+```Swift
+let items: [AVMetadataItem] = []
+let keySpace = AVMetadataKeySpaceiTunes
+let artistKey = AVMetadataiTunesMetadataKeyArtist
+let albumKey = AVMetadataiTunesMetadataKeyAlbum
+let artistMetadata = AVMetadataItem.metadataItems(from: items, withKey: artistKey, keySpace: keySpace)
+let albumMetadata = AVMetadataItem.metadataItems(from: items, withKey: albumKey, keySpace: keySpace)
+            
+if !artistMetadata.isEmpty {
+    let artistItem = artistMetadata[0]
+}
+            
+if !albumMetadata.isEmpty {
+    let albumItem = albumMetadata[0]
+}
+```
+
+* 이 예제는 AVMetadataItem에서 metadataItemsFromArray : withKey : keySpace : 메서드를 사용하여 키와 키 공간 기준에 맞는 항목으로 컬렉션을 필터링합니다. 이 호출의 반환 값은 NSArray이지만 일반적으로 단일 AVMetadataItem 인스턴스를 포함합니다.
+
+## Using AVMetadataItem
+* 가장 기본적인 형태의 AVMetadataItem은 키 / 값 쌍의 래퍼입니다. 공통 키 공간에 존재하는 경우 키 또는 commonKey를 요청할 수 있으며 가장 중요한 것은 값입니다. value 속성은 id <NSObject, NSCopying>로 정의되지만 NSString, NSNumber, NSData 또는 경우에 따라 NSDictionary가됩니다. 미리 값 유형을 알고 있으면 AVMetadataItem은 반환 값을 적절하게 입력하기 쉽게하는 stringValue, numberValue 및 dataValue의 세 가지 유형 강제 변환 속성도 제공합니다.
+* AVMetadataItem으로 작업 할 때 가장 많이 접하는 문제는 키 속성을 이해하는 것입니다. commonKey는 문자열로 정의되며 AVMetadataFormat.h에 정의 된 키에 대해 평가하기 쉽지만 키 속성은 id <NSObject, NSCopying> 값으로 정의됩니다. 이 유형은 물론 NSString을 보유 할 수 있지만, 거의 그렇지 않습니다. 예를 들어, 다음 코드로 내 라이브러리의 M4A 파일에 포함 된 메타 데이터를 반복하는 경우 예기치 않은 키 값이 표시됩니다.
+
+```Swift
+        if let url = URL(string: "") {
+            let asset = AVAsset(url: url)
+            let metadata = asset.metadata(forFormat: AVMetadataFormatiTunesMetadata)
+            
+            for item in metadata {
+                NSLog("\(item.key, item.value)")
+            }
+        }
+```
+
+* 이 코드를 실행하면 다음과 같은 목록이 생성됩니다.
+
+```
+-1452383891: Have A Drink On Me
+-1455336876: AC/DC
+-1451789708: A. Young - M. Young - B. Johnson
+-1453233054: Back In Black
+-1453039239: 1980
+```
+
+* 이 값으로 Back in Black 앨범의 AC / DC 노래임을 알 수 있지만 분명하지 않은 것은 키 속성에 대해 반환 된 정수 값입니다. 여러분이 보고있는 것은 다양한 키 문자열의 정수 값입니다. 이러한 값을 해석하려면 먼저 해당 값을 문자열로 변환해야합니다. 이것은 자주 수행 할 작업이므로 keyString이라는 AVMetadataItem에 범주 메서드를 추가하면 NSString에 해당하는 항목을 쉽게 검색 할 수 있습니다.
+
+* Listing 3.1에서 이 카테고리 메소드의 구현을 살펴 보자.
+
+Listing 3.1 AVMetadataItem keyString Category Method
+```ObjectiveC
+#import "AVMetadataItem+THAdditions.h"
+
+@implementation AVMetadataItem (THAdditions)
+
+- (NSString *)keyString {
+    if ([self.key isKindOfClass:[NSString class]]) {                        // 1
+        return (NSString *)self.key;
+    }
+    else if ([self.key isKindOfClass:[NSNumber class]]) {
+
+        UInt32 keyValue = [(NSNumber *) self.key unsignedIntValue];         // 2
+
+        // Most, but not all, keys are 4 characters. ID3v2.2 keys are
+        // only be 3 characters long. Adjust the length if necessary.
+
+        size_t length = sizeof(UInt32);                                     // 3
+        if ((keyValue >> 24) == 0) --length;
+        if ((keyValue >> 16) == 0) --length;
+        if ((keyValue >> 8) == 0) --length;
+        if ((keyValue >> 0) == 0) --length;
+
+        long address = (unsigned long)&keyValue;
+        address += (sizeof(UInt32) - length);
+
+        // keys are stored in big-endian format, swap
+        keyValue = CFSwapInt32BigToHost(keyValue);                          // 4
+
+        char cstring[length];                                               // 5
+        strncpy(cstring, (char *) address, length);
+        cstring[length] = '\0';
+
+        // Replace '©' with '@' to match constants in AVMetadataFormat.h
+        if (cstring[0] == '\xA9') {                                         // 6
+            cstring[0] = '@';
+        }
+
+        return [NSString stringWithCString:(char *) cstring                 // 7
+                                  encoding:NSUTF8StringEncoding];
+
+    }
+    else {
+        return @"<<unknown>>";
+    }
+}
+
+@end
+```
+
+1. key 속성이 이미 문자열 인 경우 그대로 반환하십시오. 이것은 흔하지 않은 경우입니다.
+2. 부호없는 정수 값으로 키를 요청합니다. 반환되는 값은 곧 추출 할 4 문자 코드를 나타내는 32 비트 빅 엔디안 숫자입니다.
+3. 거의 모든 경우에 값은 © gen 또는 TRAK와 같은 4 자리 코드이지만 ID3v2.2를 사용하여 태그 된 MP3 파일의 경우 키 값은 3 자입니다. 길이를 줄여야하는지 결정하기 위해 코드는 각 바이트를 이동시킵니다.
+4. 숫자가 빅 엔디 언 형식이기 때문에 CFSwapInt32BigToHost () 함수를 사용하여 호스트 CPU와 일치하도록 바이트 순서를 바꿉니다. 이는 Intel 및 ARM 프로세서 모두에 대한 리틀 엔디안입니다.
+5. 문자 배열을 만들고 strncpy 함수를 사용하여이 배열에 문자 바이트를 채 웁니다.
+6. 많은 수의 QuickTime 사용자 데이터와 iTunes 키 앞에는 © 문자가 붙습니다. 그러나 AVMetadataFormat.h에 정의 된 키 앞에는 @ 기호가 붙습니다. 키 상수와 문자열 비교를 수행하려면 ©를 @ 문자로 바꿉니 다.
+7. 마지막으로 stringWithCString : encoding initializer를 사용하여 문자 배열을 NSString으로 변환합니다.
+
+* 이 범주를 가져오고이 새 메서드를 사용하기 위해 이전 코드 예제를 수정하면 다음과 같이 훨씬 덜 이해하기 어려운 출력이 표시됩니다.
+
+```
+@nam: Have A Drink On Me
+@ART: AC/DC
+@wrt: A. Young - M. Young - B. Johnson
+@alb: Back In Black
+@day: 1980
+```
+
+```
+노트
+Mac OS X 10.10 및 iOS 8에서는 키와 키 스페이스로 저작물의 메타 데이터를 검색하는 것 외에도 식별자를 사용하여 메타 데이터를 검색하는 추가 방법을 도입했습니다. 식별자는 키와 키 공간을 단일 문자열로 통합하여 Asset의 메타 데이터를 검색하는데 약간 간단한 모델을 제공합니다. 이 장에서는 여러 OS 버전에서 호환 가능하기 때문에 키와 키 스페이스 접근 방식을 사용하지만 Mac OS X 10.10 또는 iOS 8 만 타겟팅하는 경우 식별자 사용을 고려할 수 있습니다.
+```
+* 이제 AVMetadataItem에 대한 기본적인 이해를 했으므로 MetaManager라는 Mac 메타 데이터 편집기 응용 프로그램을 작성하여이 지식을 실행 해 봅시다.

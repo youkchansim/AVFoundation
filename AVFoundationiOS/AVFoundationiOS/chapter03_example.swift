@@ -39,6 +39,32 @@ class Test {
             if let assetURL = item.value(forProperty: MPMediaItemPropertyAssetURL) as? URL {
                 let asset = AVAsset(url: assetURL)
                 print(asset)
+                asset.statusOfValue(forKey: <#T##String#>, error: <#T##NSErrorPointer#>)
+                asset.loadValuesAsynchronously(forKeys: <#T##[String]#>, completionHandler: <#T##(() -> Void)?##(() -> Void)?##() -> Void#>)
+            }
+        }
+        
+        if let url = Bundle.main.url(forResource: "sunset", withExtension: "mov") {
+            let asset = AVAsset(url: url)
+            
+            // Asynchronously load the assets 'tracks' property
+            let keys = ["tracks"]
+            asset.loadValuesAsynchronously(forKeys: keys) {
+                // Capture the status of the 'tracks' preperty
+                var error: NSErrorPointer
+                let status = asset.statusOfValue(forKey: "tracks", error: error)
+                
+                //  Switch over the status to determine its state
+                switch status {
+                case .loaded:
+                    break
+                case .failed:
+                    break
+                case .cancelled:
+                    break
+                default:
+                    break
+                }
             }
         }
     }

@@ -5,3 +5,5 @@
 [2. Playing and Recording Audio](Chapter02/Contents.md)
 
 [3. Working with Assets and Metadata](Chapter03/Contents.md)
+
+[4. Playing Video](Chapter04/Contents.md)

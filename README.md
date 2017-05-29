@@ -7,3 +7,5 @@
 [3. Working with Assets and Metadata](Chapter03/Contents.md)
 
 [4. Playing Video](Chapter04/Contents.md)
+
+[5. Using AV Kit](Chapter05/Contents.md)

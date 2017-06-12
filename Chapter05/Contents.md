@@ -283,3 +283,364 @@ class THDocument: NSDocument {
 6. 플레이어 항목의 상태가 AVPlayerItemStatusReadyToPlay인 경우 로드하도록 요청한 AVAsset 속성을 안전하게 호출 할 수 있습니다.
 7. titleForAsset을 호출합니다. 재생할 Asset의 제목을 검색 할 수 있습니다. 유효한 제목이 반환되면 윈도우의 title 속성으로 설정합니다. 그렇지 않은 경우 제목에는 저작물의 파일 이름이 표시됩니다. 약간의 방법으로 titleForAsset : 메소드에 대한 구현을 제공 하겠지만, 이제는 nil을 반환하는 스텁 구현을 제공한다.
 8. chaptersForAsset : 현재 Asset에서 발견 된 장 표시 자에 대한 데이터를 저장하는 객체의 배열을 가져옵니다. 잠깐 챕터 데이터를 검색하는 방법에 대해 설명하겠지만 이제는 chaptersForAsset : 메소드의 스텁 구현을 제공 할 것입니다.
+
+변경 사항은 기능을 변경하지는 않지만 향후 개선 될 기능에 대비되었습니다. 건전한 검사로서 응용 프로그램을 다시 실행하고 기능이 이전과 같이 계속 작동하는지 확인하십시오.
+추가 할 더 큰 기능으로 이동하기 전에 titleForAsset : 메소드 (Listing 5.3 참조) 구현 방법을 살펴 보자. 이 방법은 지난 두 장에서 사용했던 AV Foundation의 표준 메타 데이터 기능을 사용합니다.
+
+```Swift
+// Listing 5.3
+
+func titleInMetadata(metadata: [AVMetadataItem]) -> String? {
+        let items = AVMetadataItem.metadataItems(from: metadata, withKey: AVMetadataCommonKeyTitle, keySpace: AVMetadataKeySpaceCommon)
+        return items.first?.stringValue
+    }
+    
+    func titleForAsset(asset: AVAsset?) -> String? {
+        guard let asset = asset else {
+            return nil
+        }
+        
+        if let title = titleInMetadata(metadata: asset.commonMetadata) {
+            if !title.isEmpty {
+                return title
+            }
+        }
+        
+        return nil
+    }
+```
+
+1. AVMetadataItem 인스턴스 콜렉션에서 제목을 추출하는 titleInMetadata라는 새 메소드를 추가하십시오. 먼저 `metadataItemsFromArray : withKey : keySpace : class` 메서드를 호출하여 공통 키 공간에서 제목 키를 검색합니다.
+2. 이 배열에서 firstObject를 가져 와서 그 값을 NSString으로 가져옵니다. 공통 키 공간의 제목 값은 항상 문자열이므로 stringValue 속성을 사용하여 안전하게 NSString에 강제 변환 할 수 있습니다.
+3. assetInMetadata : 메서드를 호출하여 자산의 commonMetadata를 인수로 전달합니다. 유효한 제목이 발견되면 반환합니다. 그렇지 않으면 nil을 리턴 할 것입니다.
+
+응용 프로그램을 다시 실행할 수 있습니다. 5 장 디렉토리에있는 샘플 비디오에는 제목 메타 데이터가 포함되어 있으므로 창 제목 표시 줄에 포함 된 제목이 표시되어야합니다.
+
+## Working with Chapters
+플로팅 또는 인라인 컨트롤 스타일을 사용하는 경우 AVPlayerView는 비디오 파일에 Chapter 데이터가 있을 때마다 Chapter 메뉴를 자동으로 표시합니다. 이것은 매우 편리하지만 일부 추가 기능을 구현하기 위해이 데이터를 직접 사용해야하거나 동적 챕터 메뉴를 제공하지 않는 컨트롤 스타일을 사용하는 경우에는 어떻게해야합니까? 다행히 AV Foundation을 사용하면 AVTimedMetadataGroup 클래스를 통해이 데이터로 작업 할 수 있습니다.
+Timed 메타 데이터는 제 3 장, "저작물 및 메타 데이터 작업"이후로 작업한 정적 메타 데이터와 본질적으로 동일하지만, 전체적으로 Asset에 적용하는 대신 이 메타 데이터는 Asset의 특정 시간 범위에만 적용됩니다 타임 라인. AVAsset은이 데이터를 검색 할 수있는 두 가지 방법을 제공합니다.
+
+```Swift
+asset?.chapterMetadataGroups(withTitleLocale: Locale, containingItemsWithCommonKeys: [String]?)
+asset?.chapterMetadataGroups(bestMatchingPreferredLanguages: [String])
+```
+
+두 메소드 모두 Asset에서 발견 된 챕터 메타 데이터를 나타내는 AVTimedMetadataGroup 객체의 NSArray를 반환합니다. 메소드 시그니처에서 추측 할 수 있듯이 Chapter 데이터는 로케일에 따라 다릅니다. 두 메서드 중 하나를 호출하기 전에 먼저 다음 예제와 같이 Asset의 availableChapterLocales 키가 로드되었는지 확인해야합니다.
+
+```Swift
+        let key = "availableChapterLocales"
+        asset?.loadValuesAsynchronously(forKeys: [key]) {
+            let status = self.asset?.statusOfValue(forKey: key, error: nil)
+            if status == .loaded {
+                let langs = NSLocale.preferredLanguages
+                let chapterMetadata = asset?.chapterMetadataGroups(bestMatchingPreferredLanguages: langs)
+                //processAVTimeMetadataGroup objects
+            }
+        }
+```
+
+AVTimedMetadataGroup에는 timeRange와 items의 두 가지 속성이 있습니다. timeRange 속성은 시간 범위의 시작 시간을 나타내는 CMTime과 지속 시간을 정의하는 CMTime을 포함하는 CMTimeRange 구조체를 저장합니다. 이렇게하면 이 메타 데이터가 적용되는 Asset의 타임 라인에서 시간 범위를 결정할 수 있습니다. 챕터의 제목과 선택적으로 썸네일 이미지는 공통 키 공간의 AVMetadataItem 객체의 NSArray를 포함하는 items 속성에서 찾을 수 있습니다.
+Listing 5.4에 chaptersForAsset : 메소드를 구현하여이를 실행 해 보자.
+
+```Swift
+//  5.4
+
+    func chaptersForAsset(asset: AVAsset?) -> NSArray? {
+        guard let asset = asset else {
+            return nil
+        }
+        
+        let languages = Locale.preferredLanguages
+        let metadataGroups = asset.chapterMetadataGroups(bestMatchingPreferredLanguages: languages)
+        var chapters: [THChapter] = []
+        metadataGroups.enumerated().forEach {
+            let time = $0.element.timeRange.start
+            let number = $0.offset
+            let title = titleInMetadata(metadata: $0.element.items)
+            
+            if let chapter = THChapter(time: time, number: UInt(number), title: title) {
+                chapters.append(chapter)
+            }
+        }
+        
+        return chapters as NSArray
+    }
+```
+
+1. 우선 NSLocale에 preferredLanguages 배열을 요청하십시오. 이렇게하면 사용자의 언어 기본 설정에 따라 정렬 된 언어 코드 배열이 반환됩니다. 필자의 경우, 이 목록의 첫 번째 요소는 영어입니다.
+2. 사용자가 선호하는 언어와 가장 잘 일치하는 챕터 메타 데이터 그룹을 자산에 요청합니다.
+3. AVTimedMetadataGroup 오브젝트 각각을 반복하고 각각에서 관련 데이터를 추출하십시오. 구체적으로, 앞에서 정의한 titleInMetadata : 메소드를 사용하여 timeRange와 제목에서 시작 시간을 가져옵니다. 또한 현재 루프 인덱스를 기반으로 각 장의 장 번호를 만듭니다. THChapter라는 사용자 정의 모델 객체에이 데이터를 저장하여이 데이터로 작업하는 것을 단순화합니다.
+
+챕터 메타 데이터를 가져 와서 THChapter 객체 컬렉션에 멋지게 감쌌으므로이 데이터로 무엇을 할 수 있습니까? AVPlayerView에서 제공하는 다른 사용자 정의 지점을 활용하여이 데이터를 실행합니다. AVPlayerView는 사용자의 NSMenu를 플레이어의 컨트롤에 추가 할 수있게 해주는 `actionPopUpButtonMenu`를 제공합니다. 다음 및 이전 장으로 건너 뛸 수있는 기능을 제공하는 메뉴를 만듭니다. Listing 5.5와 같이 NSMenu를 빌드한다.
+
+```Swift
+// 5.5
+
+    func setupActionMenu() {
+        let menu = NSMenu()
+        menu.addItem(NSMenuItem(title: "Previous Chapter", action: #selector(previousChapter), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Next Chapter", action: #selector(nextChapter), keyEquivalent: ""))
+        
+        playerView.actionPopUpButtonMenu = menu
+    }
+    
+    func previousChapter(sender: Any?) {
+        
+    }
+    
+    func nextChapter(sender: Any?) {
+        
+    }
+```
+
+1. 새 NSMenu 인스턴스를 만들고 previousChapter : 및 nextChapter : 셀럭터를 각각 호출하는 "이전 장"및 "다음 장"메뉴 항목을 추가하십시오. 당분간 이러한 메소드의 스텁 구현을 제공 할 것입니다.
+2. 이 메뉴를 플레이어 뷰의 actionPopUpButtonMenu 속성으로 설정하십시오. 이 메뉴는 플로팅 또는 인라인 컨트롤 스타일을 사용할 때 표시됩니다.
+
+이 메뉴를 추가하기 전에 먼저 setupActionMenu 메소드를 호출해야합니다. Listing 5.6과 같이 `observeValueForKeyPath : `메소드를 수정한다.
+
+```Swift
+//5.6
+
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == STATUS_KEY {
+            if playerItem?.status == .readyToPlay {
+                if let title = titleForAsset(asset: asset) {
+                    windowForSheet?.title = title
+                    chapters = chaptersForAsset(asset: asset)
+                    if !(chapters?.isEmpty ?? true) {
+                        setupActionMenu()
+                    }
+                    playerItem?.removeObserver(self, forKeyPath: STATUS_KEY)
+                }
+            }
+        }
+    }
+```
+
+챕터 데이터가 Asset에 있는 경우에만 이 메뉴를 표시하려고합니다. chapters 배열이 비어 있지 않으면 setupActionMenu 메서드를 호출합니다.
+응용 프로그램을 다시 실행하고 메뉴가 표시되는지 확인할 수 있습니다. 메뉴 항목을 클릭 할 수는 있지만 아직 해당 메소드를 아직 구현하지 않았기 때문에 아무것도 발생하지 않습니다. 이러한 메소드에 대한 구현을 제공하기 전에 우선 다음과 이전 장을 찾으려면 몇 가지 추가 지원 코드를 추가해야합니다 (목록 5.7 참조). 다음 코드는 Core Media 유형 및 함수의 고급 사용법을 처음으로 접하는 것이므로 상당히 복잡하므로이 메서드를 좀 더 자세히 살펴 보겠습니다.
+
+```Swift
+// 5.7
+
+    func findPreviousChapter() -> THChapter? {
+        guard let item = playerItem else {
+            return nil
+        }
+        
+        let playerTime = item.currentTime()
+        let currentTime = CMTimeSubtract(playerTime, CMTimeMake(3,1))
+        let pastTime = kCMTimeNegativeInfinity
+        let timeRange = CMTimeRangeMake(pastTime, currentTime)
+        return findChapterInTimeRange(timeRange: timeRange, reverse: true)
+    }
+    
+    func findNextChapter() -> THChapter? {
+        guard let item = playerItem else {
+            return nil
+        }
+        
+        let currentTime = item.currentTime()
+        let futureTime = kCMTimePositiveInfinity
+        let timeRange = CMTimeRangeMake(currentTime, futureTime)
+        return findChapterInTimeRange(timeRange: timeRange, reverse: false)
+    }
+    
+    func findChapterInTimeRange(timeRange: CMTimeRange, reverse: Bool) -> THChapter? {
+        var matchingChapter: THChapter?
+        
+        let options: NSEnumerationOptions = reverse ? .reverse : NSEnumerationOptions(rawValue: 0)
+        chapters?.enumerateObjects(options: options) { obj, idx, stop in
+            if let chapter = obj as? THChapter {
+                if chapter.is(in: timeRange) {
+                    matchingChapter = chapter
+                    stop.pointee = true
+                }
+            }
+        }
+        
+        return matchingChapter
+    }
+```
+
+1. 이전 장을 찾으려면 두 개의 CMTime 값을 정의하십시오. 첫 번째는 플레이어 아이템의 현재 시간에서 3초를 포착하고, 두 번째는 kCMTimeNegativeInfinity 상수를 사용하여 정의 된 과거의 무한 시간입니다. 동영상을 재생할 때 시간이 계속해서 앞당겨지고 있으므로 메뉴 항목을 선택할 때 몇 초만 기다려야합니다. 그렇지 않으면 사용자는 현재 챕터의 시작 시간으로 돌아가는 일정한 루프에 갇혀있을 것입니다. currentTime을 계산할 때 CMTimeSubtract 함수를 사용하여 3 초를 빼고 결과 값을 currentTime으로 설정합니다.
+2. CMTimeRangeMake 함수를 사용하여 CMTimeRange를 작성하십시오. 이 함수는 pastTime을 시간 범위의 시작으로 전달하고 currentTime은 지속 기간으로 전달합니다. 이 시간 범위는 THChapter 객체 컬렉션을 검색하는데 사용됩니다.
+3. findChapterInTimeRange : reverse : 메서드를 호출하여 reverse : 인수에 대해 YES를 전달합니다. 이는 chapters 배열을 거꾸로 검색하려고 함을 나타냅니다.
+4. findPreviousChapter 메서드와 비슷하게 플레이어 아이템의 현재 시간을 캡처하십시오. 특별한 계산을 수행 할 필요가 없습니다. 앞으로 나아갈 때 타이밍 문제가 없기 때문입니다. 시간 범위의 상한선을 표시하는 kCMTimePositiveInfinity 상수를 사용하여 미래에 무한히 시간을 만듭니다.
+5. 현재 시간을 시작으로 미래 시간을 지속 시간으로 사용하여 CMTimeRange를 작성하십시오.
+6. findChapterInTimeRange : reverse :를 호출합니다. 이 경우에는 챕터 배열을 통해 앞으로 검색하려고하기 때문에 이번에는 reverse : 인수로 NO를 전달합니다.
+7. chapters 배열의 객체를 열거하여 reverse : 인수로 지정된 순서대로 컬렉션을 반복합니다.
+8. Chapter의 isInTimeRange : 메서드를 호출하여 Chapter의 시작 시간이 지정된 시간 범위에 있는지 확인합니다. 이후 일치 항목을 발견하면 요소 처리를 중단 할 수 있습니다.
+9. 마지막으로 일치하는 THChapter를 반환합니다. 또한 타임 라인의 시작 부분에서 뒤로 이동하거나 타임 라인의 끝에서 앞으로 이동하려고하는 경우와 같이 일치하는 항목이 없으면 이 메서드에서 nil을 반환하는 것이 좋습니다.
+
+간단한 데이터 홀더 객체이기 때문에 THChapter 클래스의 전체 구현을 다루지는 않겠지만 Core Media 프레임 워크에서 찾은 유용한 매크로를 사용하기 때문에 isInTimeRange : 메서드를 호출하고 싶습니다.
+
+```Objectivec
+- (BOOL)isInTimeRange:(CMTimeRange)timeRange {
+    return CMTIME_COMPARE_INLINE(_time, >, timeRange.start) &&
+            CMTIME_COMPARE_INLINE(_time, <, timeRange.duration);
+}
+```
+
+Core Media는 많은 유용한 기능과 매크로를 정의합니다. 공정하게 사용할 가능성이 큰 매크로는 CMTIME_COMPARE_INLINE입니다. 이 매크로는 비교 연산자와 함께 두 개의 CMTime 값을 취해 비교가 true인지 나타내는 부울을 반환합니다. isInTimeRange : 메서드에서 Chapter의 시작시간과 지속시간 사이에 시간이 있는지를 결정합니다.
+어려운 부분은 끝났으므로 이 기능을 실제로 사용할 준비가되었습니다. Listing 5.8은 나머지 메소드의 구현을 보여준다.
+
+```Swift
+// 5.8
+
+    func previousChapter(sender: Any?) {
+        skipToChapter(findChapter: findPreviousChapter)
+    }
+    
+    func nextChapter(sender: Any?) {
+        skipToChapter(findChapter: findNextChapter)
+    }
+    
+    func skipToChapter(findChapter: () -> THChapter?) {
+        guard let chapter = findChapter() else {
+            return
+        }
+        
+        playerItem?.seek(to: chapter.time) { _ in
+            self.playerView.flashChapterNumber(Int(chapter.number), chapterTitle: chapter.title)
+        }
+    }
+```
+
+1. 사용자가 이전 Chapter 메뉴를 선택하면 findPreviousChapter 메소드를 호출하고 그 결과를 skipToChapter : 메소드에 전달합니다.
+2. 마찬가지로 사용자가 다음 장 메뉴를 선택하면 findNextChapter 메서드를 호출하고 반환 된 값을 skipToChapter : 메서드에 전달합니다.
+3. 마지막으로 skipToChapter : 메서드에서 플레이어 아이템의 seekToTime : completionHandler : 메서드를 호출하여 챕터 시간을 첫 번째 인수로 전달합니다. completionHandler : 콜백에서 플레이어 뷰의 flash-ChapterNumber : chapterTitle : 메서드를 호출하여 플레이어 뷰에서 장 번호와 제목을 깜박입니다.
+응용 프로그램을 다시 실행하고 비디오를 열고 건너 뜁니다.
+
+## Enabling Trimming
+AVPlayerView에서 제공하는 뛰어난 기본 재생 경험 외에도 슬리브의 또 다른 유용한 트릭이 있습니다. 현재 버전의 QuickTime Player를 사용했다면 그림 5.13과 같이 편집 메뉴로 가서 트리밍을 선택하여 트리밍 인터페이스를 열 수 있다는 것을 알고있을 수 있습니다.
+
+<p align="center">
+<image src="Resource/13.png" width="50%" height="50%">
+</p>
+
+AVPlayerView는 이와 동일한 동작 및 인터페이스를 제공하며, 가장 중요한 부분은 자신의 응용 프로그램에 추가하기가 매우 쉽다는 것입니다. 샘플 애플리케이션에는 이미 Trim 메뉴 항목과 스텁 된 startTrimming : 메소드가 있지만 이 메소드에 대한 구현을 제공해야한다 (목록 5.9 참조).
+
+```Swift
+// 5.9
+
+    @IBAction func startTrimming(sender: Any) {
+        playerView.beginTrimming(completionHandler: nil)
+    }
+```
+
+내가 어떤 코드를 잊어 버렸는지 궁금해하고 있을지 모르지만, 직접 해보십시오. 응용 프로그램을 실행하고 샘플 비디오를 엽니다. 편집 메뉴로 가서 자르기 메뉴 항목을 선택하십시오. 이렇게하면 QuickTime Player에서 제공되는 것과 동일한 트리밍 인터페이스가 제공되며, 자르기 및 취소 버튼 모두 예상되는 동작을 제공합니다.
+트리밍하기 전에 항상 플레이어 뷰의 `canBeginTrimming` 속성을 쿼리하여 시작해야합니다. 이 속성이 NO를 반환하는 몇 가지 경우가 있습니다. 첫 번째는 트리밍 인터페이스가 이미 제공되고있는 경우입니다.이 상태에서 트리밍을 시작하는 것이 적절하지 않기 때문입니다. 두 번째는 Asset에서 명시 적으로 트리밍을 허용하지 않는 경우입니다. 예를 들어, iTunes Store에서 구입 한 영화 또는 TV 프로그램을 트리밍 할 수 없습니다. 보통 이 프로퍼티를 쿼리하는 가장 적절한 곳은 `validateUserInterfaceItem :` 메소드에 있을 것이므로 메뉴 아이템을 적절하게 활성화 또는 비활성화 할 수 있습니다 (예제 5.10 참조).
+
+```Swift
+// 5.10
+
+    override func validateUserInterfaceItem(_ item: NSValidatedUserInterfaceItem) -> Bool {
+        let action = item.action
+        if action == #selector(startTrimming(sender:)) {
+            return playerView.canBeginTrimming
+        }
+        
+        return true
+    }
+```
+
+이제 응용 프로그램을 실행할 때 트리밍 인터페이스가 나타나면 트리밍 메뉴 항목이 비활성화됩니다.
+트리밍이 어떻게 수행되고 있는지 궁금 할 것입니다. Asset을 다듬기위한 코드를 추가하지 않았으며, 기억한다면 AVAsset은 수정 불가능한 불변 객체입니다. Trim 버튼을 클릭했을 때 무슨 일이 일어 났습니까? 음, 일종의 환상. 자르기 단추를 클릭하면 플레이어뷰에서 현재 AVPlayerItem의 두 속성을 수정합니다. 트림 컨트롤의 왼쪽은 플레이어 항목의 reversePlaybackEndTime 속성을 설정하고 오른쪽은 forwardPlaybackEndTime을 설정합니다. 이 속성은 자산의 유효 타임 라인을 정의합니다. 비디오를 트리밍 한 다음 다시 트리밍 메뉴를 호출하면 모든 컨텐츠가 아직 남아 있고 트리밍 인터페이스가 트리밍 한 부분으로 조정된다는 것을 알 수 있습니다. AVPlayerView의 제한 사항은 아니지만 단순히 AV Foundation의 변경 불가능한 디자인 철학에 부합합니다. 이것이 바로 QuickTime Player에서 볼 수있는 동작입니다. 따라서 자산이 수정되지 않는 경우 어떻게 변경 사항을 저장합니까? 이것은 우리에게 Export의 화제를 가져온다.
+
+## Exporting
+트리밍 작업의 결과를 저장하려면 AVAssetExportSession 클래스를 사용하여 현재 에셋을 새 것으로 내보낼 수 있습니다. 이 클래스는 이미 보았으며 AV Foundation에서 작업 할 때 자주 사용하는 클래스입니다.
+응용 프로그램에는 해당 startExporting : 메소드에 연결되는 파일 메뉴의 내보내기 메뉴 항목이 이미 있습니다. 필요한 것은이 메서드에 대한 구현을 제공하는 것입니다. Listing 5.11에서 볼 수 있듯이 문서 객체의 클래스 확장에 몇 가지 새로운 속성을 추가하는 것으로 시작한다.
+
+```Swift
+// 5.11
+
+    @IBAction func startExporting(sender: Any) {
+        playerView.player?.pause()
+        let savePanel = NSSavePanel()
+        
+        if let window = windowForSheet {
+            savePanel.beginSheetModal(for: window) {
+                if $0 == NSFileHandlingPanelOKButton {
+                    savePanel.orderOut(nil)
+                    
+                    let preset = AVAssetExportPresetAppleM4V720pHD
+                    if let asset = self.asset {
+                        self.exportSession = AVAssetExportSession(asset: asset, presetName: preset)
+                        
+                        if let startTime = self.playerItem?.reversePlaybackEndTime, let endTime = self.playerItem?.forwardPlaybackEndTime {
+                            let timeRange = CMTimeRange(start: startTime, end: endTime)
+                            
+                            self.exportSession?.timeRange = timeRange
+                            self.exportSession?.outputFileType = self.exportSession?.supportedFileTypes.first
+                            self.exportSession?.outputURL = savePanel.url
+                            
+                            self.exportController = THExportWindowController()
+                            self.exportController?.exportSession = self.exportSession
+                            self.exportController?.delegate = self
+                            if let exportControllerWindow = self.exportController?.window {
+                                window.beginSheet(exportControllerWindow, completionHandler: nil)
+                                self.exportSession?.exportAsynchronously {
+                                    window.endSheet(exportControllerWindow)
+                                    self.exportController = nil
+                                    self.exportSession = nil
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    extension THDocument: THExportWindowControllerDelegate {
+        func exportDidCancel() {
+            exportSession?.cancelExport()
+        }
+    }
+```
+1. 내보내기가 실행되는 동안 사용자가 전송 컨트롤과 상호 작용할 수 없기 때문에 비디오가 현재 재생중인 경우 재생을 일시 중지하여 시작하십시오.
+2. AVAssetExportSession의 새 인스턴스를 만들고 자산과 내보내기 사전 설정을 전달합니다. 이 경우 AVAsetExportPresetAppleM4V720pHD를 사용하고 있는데 720p MPEG-4 비디오 파일을 만들지 만 대체 프리셋을 자유롭게 선택할 수 있습니다. 예를 들어 트리밍 작업을 내보내는 경우 AVAssetExportPresetPassthrough를 사용하여 미디어를 트랜스 코딩하지 않아도됩니다.
+3. 역방향 및 정방향 재생 종료 시간을 기준으로 시간 범위를 만듭니다. 명시적인 트림 작업이 수행되지 않은 경우 역방향 및 정방향 종료 시간은 kCMTimeInvalid와 같아 지므로 kCMTimeRangeInvalid와 같은 시간 범위가됩니다. 내보내기 세션에서 kCMTimeRangeInvalid의 시간 범위 값을 설정하면 비디오의 전체 재생 시간이 내보내집니다.
+4. 내보내기 세션을 시간 범위, 내보내기 세션과 호환 가능한 출력 파일 유형 및 NSSavePanel에서 가져온 출력 URL로 구성합니다.
+5. 샘플 애플리케이션은 THExportWindowController라는 클래스를 제공하는데, 이것은 내보내기 진행 창을 표시하기위한 간단한 NSWindowController 서브 클래스이다. 새 인스턴스를 만들고 자체를 위임자로 설정하고 창을 새 시트로 제공하십시오.
+6. 내보내기를 시작하면 콜백이 호출되면 내보내기 시트와 컨트롤러 인스턴스가 분리됩니다.
+7. 사용자가 내보내기 진행 창에서 취소 단추를 누르면 내보내기 세션이 취소됩니다.
+
+이 모든 기능을 시험해 볼 때입니다. 응용 프로그램을 실행하고 샘플 비디오를 열고 흥미로운 섹션을 잘라내어 하드 드라이브의 위치로 복사본을 내 보냅니다. 당신이 사용할 수있는 수출 결과를 확인하려면 ... KitTime Player!
+
+## Movie Modernization
+이 장에서 마지막으로 다룰 내용은 AV Foundation의 일부는 아니지만 주제와 관련이 있으며 기존 QuickTime 기반 응용 프로그램이있는 경우 특히 중요 할 수 있습니다.
+QuickTime은 매우 강력하고 유연한 미디어 플랫폼의 일부인 매우 다양한 코덱 및 미디어 유형을 지원했습니다. 그러나 지원되는 코덱의 대부분은 더 이상 적합하지 않으며 지원되는 트랙 유형 중 일부는 더 새롭고보다 유능한 기술로 대체되었습니다. AV Foundation은 이러한 레거시 기능을 지원하지 않으며, 대신 미래에 가장 적합한 코덱 및 트랙 유형이라고 생각하는 것에 초점을 둡니다.
+현재의 미디어 환경을 감안할 때,이 코덱과 미디어 유형은 전적으로 합리적 일 수 있습니다. 그러나 오늘날의 Macintosh 멀티미디어 환경은 시작되지 않았습니다. 사용자는 지원되지 않는 코덱으로 수 년 동안 인코딩 된 미디어를 보유하고 있으며 이러한 콘텐츠를 단순히 포기할 것으로 기대하는 것은 무리가 있습니다. 당신은 무엇을 할 수 있나요?
+드문 경우지만, 애플은 Mac OS X 10.9에서 더 이상 사용되지 않는 프레임 워크에 새로운 클래스를 추가했습니다. 특히 QTKit 프레임 워크에 QTMovieModernizer라는 새로운 클래스를 추가했습니다. 이 수업의 목적은 이전 미디어를 AV Foundation에서 지원하는 형식으로 마이그레이션하는 것입니다. 실제로 QuickTime Player의 Mavericks 버전을 사용하여 이전 QuickTime 파일을 열면이 동작을 볼 수 있습니다. 파일을 열면 미디어를 열기 전에 "변환 중 ..."이라는 메시지가 표시됩니다. QuickTime Player는이 클래스를 사용하여 미디어를 변환하며 응용 프로그램에서도이 클래스를 사용할 수 있습니다.
+응용 프로그램을 실행하고 파일> 열기 ...를 선택하고 5 장 디렉토리로 이동합니다. 여기에는 다양한 레거시 코덱으로 인코딩 된 몇 개의 QuickTime 파일이 포함 된 Legacy라는 하위 디렉토리가 있습니다. 이 파일 중 하나를 열고 재생 버튼을 누릅니다. 스피커에서 나오는 오디오는 들리지만 AV Foundation에는 비디오 트랙을 디코딩 할 수있는 방법이 없으므로 비디오 내용이 표시되지 않습니다. 이 문제를 해결하기 위해 QTMovieModernizer 클래스를 사용하는 방법을 살펴 보겠습니다. Listing 5.13과 같이 기존 코드를 약간 수정하면된다.
+
+```Swift
+// 5.13
+
+    override func windowControllerDidLoadNib(_ controller: NSWindowController) {
+        super.windowControllerDidLoadNib(controller)
+        
+        if !modernizing {
+            if let url = fileURL {
+                setupPlayerbackStack(with: url)
+            }
+        } else {
+            if let window = controller.window as? THWindow {
+                window.showConvertingView()
+            }
+        }
+    }
+```
+windowControllerDidLoadNib :를 수정하여 QTMovieModernizer가 현재 변환을 실행 중인지 여부를 나타내는 modernizing 속성의 상태에 따라 조건부로 설정을 수행합니다. 근대화가 false이면 정상적으로 설정을 실행하지만 사실이면 진행률 회 전자를 표시하는 window 객체에 showConvertingView를 호출합니다.
+목록 5.13을 변경하여 실제 현대화 프로세스로 넘어 갑시다. Listing 5.14와 같이 readFromURL : ofType : error : 메소드를 다음과 같이 변경한다.
+
+```Swift
+// 5.13
+
+Swift는 QTKit을 지원하지않아서 예제작성불가..
+```
+
+## Summary
+이 장에서는 AVKit 프레임 워크를 사용하는 방법을 잘 이해하게되었습니다. iOS 용 AV Kit은 AVPlayerViewController를 제공하므로 AV Foundation을 사용하여 iOS 용 최신 비디오 재생 응용 프로그램을 쉽게 만들 수 있습니다. Mac OS X 용 AV Kit은 AVPlayerView를 제공합니다. AVPlayerView는 Mac에서 비디오 재생 응용 프로그램을 만드는 간단하지만 강력한 방법을 제공하며 QTMovieView의 지원 중단으로 남겨진 공백을 채 웁니다. AV Kit을 사용하면 두 플랫폼 모두에서 사용자가 기대했던 것과 동일한 기능, 인터페이스 및 인터페이스로 비디오 플레이어를 쉽게 만들 수 있습니다. 또한 AVTimeMetadataGroup 클래스를 사용하여 AVAsset에 저장된 시간별 챕터 메타 데이터를 처리하는 방법을 살펴 보았습니다. Mac 응용 프로그램의 맥락에서이 주제를 다뤘지만이 기능은 물론 iOS에서도 사용할 수 있습니다. 마지막으로 우리는 매우 유용한 QTMovieModernizer 클래스를 보았습니다. 이 클래스는 QTKit 프레임 워크의 일부이지만 Mac 플랫폼에서 AV Foundation 응용 프로그램의 기능을 향상시키는데 사용할 수 있습니다.

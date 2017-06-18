@@ -9,3 +9,5 @@
 [4. Playing Video](Chapter04/Contents.md)
 
 [5. Using AV Kit](Chapter05/Contents.md)
+
+[6. Capturing Media](Chapter06/Contents.md)

@@ -11,3 +11,5 @@
 [5. Using AV Kit](Chapter05/Contents.md)
 
 [6. Capturing Media](Chapter06/Contents.md)
+
+[7. Using Advanced Capture Features](Chapter07/Contents.md)

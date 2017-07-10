@@ -13,3 +13,5 @@
 [6. Capturing Media](Chapter06/Contents.md)
 
 [7. Using Advanced Capture Features](Chapter07/Contents.md)
+
+[8. Reading and Writing Media](Chapter08/Contents.md)

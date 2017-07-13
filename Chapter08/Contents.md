@@ -38,3 +38,101 @@ AVAssetWriter는 실시간 및 오프라인 작업 모두에 사용할 수 있�
 
 ## Reading and Writing Example
 오프라인 시나리오에서 AVAssetReader 및 AVAssetWriter를 사용하는 방법을 보여주는 기본 예제를 살펴 보겠습니다. 이 예제는 AVAssetReader를 사용하여 Asset의 비디오 트랙에서 샘플을 읽어서 AVAssetWriter를 사용하여 새 QuickTime 무비 파일에 기록합니다. 이것은 일반적으로 고안된 예제이지만 이러한 클래스를 함께 사용할 때 관련된 기본 단계를 보여줍니다. AVAssetReader의 설정과 구성부터 시작하겠습니다.
+
+```objectivec
+AVAsset *asset = // Asynchronously loaded video asset
+AVAssetTrack *track =
+    [[asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
+
+self.assetReader =
+    [[AVAssetReader alloc] initWithAsset:asset error:nil];
+
+NSDictionary *readerOutputSettings = @{
+    (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)
+};
+
+AVAssetReaderTrackOutput *trackOutput =
+    [[AVAssetReaderTrackOutput alloc] initWithTrack:track
+                                        outputSettings:readerOutputSettings];
+
+[self.assetReader addOutput:trackOutput];
+
+[self.assetReader startReading];
+```
+
+이 예제는 새로운 AVAssetReader를 만들어서 AVAsset 인스턴스를 전달하여 읽기 시작합니다. Asset의 비디오 트랙에서 샘플을 읽고 비디오 프레임을 BGRA 형식으로 압축 해제하는 `AVAssetReaderTrackOutpu`t을 만듭니다. 리더에 출력을 추가하고 startReading 메소드를 호출하여 읽기 프로세스를 시작합니다.
+다음으로 AVAssetWriter를 만들고 구성해 보겠습니다.
+
+```objectivec
+NSURL *outputURL = // Destination output URL
+
+self.assetWriter = [[AVAssetWriter alloc] initWithURL:outputURL fileType:AVFileTypeQuickTimeMovie error:nil];
+
+NSDictionary *writerOutputSettings = @{
+    AVVideoCodecKey: AVVideoCodecH264,
+    AVVideoWidthKey: @1280,
+    AVVideoHeightKey: @720,
+    AVVideoCompressionPropertiesKey: @{
+        AVVideoMaxKeyFrameIntervalKey: @1,
+        AVVideoAverageBitRateKey: @10500000,
+        AVVideoProfileLevelKey: AVVideoProfileLevelH264Main31,
+    }
+};
+
+AVAssetWriterInput *writerInput =
+    [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo
+                                   outputSettings:writerOutputSettings];
+
+[self.assetWriter addInput:writerInput];
+
+[self.assetWriter startWriting];
+```
+
+이 예제에서는 새 AVAssetWriter를 만들고 출력 URL에 새 파일을 원하는 파일 형식과 함께 써야합니다. 적절한 미디어 유형과 출력 설정으로 새로운 AVAssetWriterInput을 생성하여 720p H.264 비디오를 만듭니다. 출력기에 입력을 추가하고 startWriting 메서드를 호출합니다.
+
+```
+노트
+AVAssetWriter가 AVAssetExportSession을 통해 제공하는 뚜렷한 이점은 출력을 인코딩 할 때 사용하는 압축 설정을 세부적으로 제어 할 수 있다는 것입니다. 이를 통해 키 프레임 간격, 비디오 비트 전송률, H.264 프로파일, 픽셀 종횡비 및 clean aperture와 같은 설정을 지정할 수 있습니다.
+```
+
+AVAssetReader 및 AVAssetWriter 객체가 설정된 상태에서 새 쓰기 세션을 시작하여 소스 Asset의 샘플을 읽고 새 Asset에 쓸 시간입니다. 이 예제는 pull 모델을 사용하여 Writer 입력이 더 많은 샘플을 추가 할 준비가 되었을 때 소스에서 샘플을 가져 오는 방법을 보여줍니다. 이것은 비 실시간 소스에서 샘플을 작성할 때 사용할 모델입니다.
+
+```objectivec
+// Serial Queue
+dispatch_queue_t dispatchQueue =
+    dispatch_queue_create("com.tapharmonic.WriterQueue", NULL);
+
+[self.assetWriter startSessionAtSourceTime:kCMTimeZero];
+[writerInput requestMediaDataWhenReadyOnQueue:dispatchQueue usingBlock:^{
+
+    BOOL complete = NO;
+
+    while ([writerInput isReadyForMoreMediaData] && !complete) {
+
+        CMSampleBufferRef sampleBuffer = [trackOutput copyNextSampleBuffer];
+
+        if (sampleBuffer) {
+            BOOL result = [writerInput appendSampleBuffer:sampleBuffer];
+            CFRelease(sampleBuffer);
+            complete = !result;
+        } else {
+            [writerInput markAsFinished];
+            complete = YES;
+        }
+    }
+
+    if (complete) {
+        [self.assetWriter finishWritingWithCompletionHandler:^{
+            AVAssetWriterStatus status = self.assetWriter.status;
+            if (status == AVAssetWriterStatusCompleted) {
+                // Handle success case
+            } else {
+                // Handle failure case
+            }
+        }];
+    }
+}];
+```
+
+이 예제는 startSessionAtSourceTime : 메서드를 사용하여 새 쓰기 세션을 시작하고 kCMTimeZero를 소스 샘플의 시작 시간으로 전달하여 시작됩니다. requestMediaDataWhenReadyOnQueue : usingBlock :에 전달 된 블록은 Writer 입력이 더 많은 샘플을 추가 할 준비가 되면 계속해서 호출됩니다. 각 호출에서 입력이 더 많은 데이터를 준비하는 동안, 트랙 출력에서 ​​사용 가능한 샘플을 복사하여 입력에 추가합니다. 모든 샘플이 트랙 출력에서 ​​복사되면 AVAssetWriterInput을 마친 것으로 표시하고 추가가 완료되었음을 나타냅니다. 마지막으로, finishWritingWithCompletionHandler :를 호출하여 쓰기 세션을 마무리합니다. 완성 처리기에서 Asset Writer의 status 속성을 쿼리하여 작성 세션이 성공적으로 완료되었는지, 실패했는지, 취소되었는지 여부를 확인할 수 있습니다.
+이제 AVAssetReader 및 AVAssetWriter 클래스를 더 잘 이해할 수 있습니다. 앞의 코드 예제는 이러한 클래스를 사용하여 오프라인 처리를 수행 할 때 사용할 기본 패턴을 제공합니다. 좀더 구체적이고 실제적인 예제를 계속 살펴보고, AVAssetReader 및 AVAssetWriter의 가치에 대해 더 잘 이해할 수 있도록하겠습니다.

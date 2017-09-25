@@ -17,3 +17,5 @@
 [8. Reading and Writing Media](Chapter08/Contents.md)
 
 [9. Composing and Editing Media](Chapter09/Contents.md)
+
+[10. 10. Mixing Audio](Chapter10/Contents.md)

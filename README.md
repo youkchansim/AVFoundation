@@ -21,3 +21,5 @@
 [10. Mixing Audio](Chapter10/Contents.md)
 
 [11. Building Video Transitions](Chapter11/Contents.md)
+
+[12. Layering Animated Content](Chapter12/Contents.md)
